@@ -12,3 +12,4 @@ fastapi[all]
 passlib==1.7.4
 uvicorn
 pydantic-settings
+fastapi-mail

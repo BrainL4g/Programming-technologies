@@ -3,8 +3,16 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.pre_start import backend_pre_start
+from src.utils.mock_data import mocking_data
+from src.db.database import SessionLocal
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Инициализация бд, таблиц
+    await backend_pre_start(app)
+    # Удаление данных и загрузка моковых
+    await mocking_data()
     yield
     # Выполняется при остановке
     pass

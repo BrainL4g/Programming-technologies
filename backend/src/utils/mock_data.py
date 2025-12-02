@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload, joinedload
 from src.core.config import settings
+from src.core.security import get_password_hash
 from src.db.database import Base, engine, SessionLocal
 from src.pre_start import init_models
 from src.db.models import User, Favorite, Product, Category, Feature, Storelink
@@ -260,6 +261,27 @@ async def run_select_queries(session: AsyncSession):
         else:
             print(f"   Магазины: нет данных")
 
+async def create_admin_user():
+    async with SessionLocal() as db:
+        # Check if the admin user already exists
+        stmt = select(User).filter(User.is_superuser == True).limit(1)
+        result = await db.execute(stmt)
+        admin_exists = result.scalar_one_or_none()
+
+        if not admin_exists:
+            # Create a new admin user
+            password = get_password_hash("12345")  # Set a default password
+            new_admin = User(
+                email="admin@example.com",
+                username="admin",
+                password=password,
+                is_superuser=True,
+            )
+            db.add(new_admin)
+            await db.commit()
+            await db.refresh(new_admin)
+            print("Админ admin@example.com с паролем 12345 создан.")
+
 async def mocking_data():
     engine.echo = False
     async with engine.begin() as conn:
@@ -269,6 +291,7 @@ async def mocking_data():
 
     async with SessionLocal() as session:
         await insert_test_data(session)
+        await create_admin_user()
         print("Загружены тестовые данные")
         # await run_select_queries(session)
 

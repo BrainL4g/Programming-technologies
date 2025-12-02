@@ -8,7 +8,7 @@ from src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
 
 class UserCRUDRepository():
     async def create_user(self, user_create: UserCreateVerify, db: AsyncSession) -> User:
-        user = User(email=user_create.email, hashed_password=get_password_hash(user_create.password), username=user_create.username)
+        user = User(email=user_create.email, password=get_password_hash(user_create.password), username=user_create.username)
         db.add(user)
         await db.commit()
         return user

@@ -13,6 +13,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(254), unique=True, index=True)
     password: Mapped[str] = mapped_column(String(128))
     username: Mapped[Optional[str]] = mapped_column(String(50), index=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
 
     fav_products: Mapped[list["Product"]] = relationship(
         "Product",

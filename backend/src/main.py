@@ -3,15 +3,18 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.exceptions import register_auth_exception_handlers
 from src.pre_start import backend_pre_start
 from src.utils.mock_data import mocking_data
+from src.api.routes.auth import router as auth_router
+from src.api.routes.users import router as user_router
 from src.db.database import SessionLocal
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Инициализация бд, таблиц
     await backend_pre_start(app)
-    # Удаление данных и загрузка моковых
+    # Удаление данных и загрузка моковых, админа
     await mocking_data()
     yield
     # Выполняется при остановке
@@ -28,6 +31,11 @@ def initialize_backend_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.include_router(auth_router)
+    app.include_router(user_router)
+
+    register_auth_exception_handlers(app)
 
     return app
 

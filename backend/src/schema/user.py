@@ -4,9 +4,9 @@ from typing import Optional
 import re
 
 def validate_password(password: str):
-    re_for_pw: re.Pattern[str] = re.compile(r"[A-Za-z0-9\d@$!%*#?&]{8,16}$")
-    if not re_for_pw.match(password):
-        raise ValueError("Not acceptable password")
+    # re_for_pw: re.Pattern[str] = re.compile(r"[A-Za-z0-9\d@$!%*#?&]{8,16}$")
+    # if not re_for_pw.match(password):
+    #     raise ValueError("Not acceptable password")
     return password
 
 class UserCreate(BaseModel):

@@ -3,7 +3,7 @@ import logging
 
 from asgiref.sync import async_to_sync
 from celery import Celery
-from src.utils.mail import generate_reset_password_email, mail, generate_project_invite_email
+from src.utils.mail import generate_reset_password_email, mail
 from src.core.config import settings
 
 logger = logging.getLogger(__name__)

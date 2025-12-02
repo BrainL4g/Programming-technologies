@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import text
+from sqlalchemy import text, select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 import asyncpg
 from src.core.config import settings
+from src.core.security import get_password_hash
 from src.db.models import *
-from src.db.database import engine, Base
+from src.db.database import engine, Base, SessionLocal
 import asyncio
 
 async def check_db_connection():
@@ -66,7 +67,7 @@ async def check_db_connection():
 async def init_models():
     async with engine.begin() as conn:
         print("Создание таблиц")
-        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
         print("Таблицы созданы")
 
@@ -78,5 +79,4 @@ async def backend_pre_start(app: FastAPI):
         pass
     else:
         print("Не удалось подключиться к базе данных")
-
     await init_models()

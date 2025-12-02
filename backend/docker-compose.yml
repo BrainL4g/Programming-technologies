@@ -1,0 +1,66 @@
+services:
+  backend:
+    build: .
+    volumes:
+      - .:/app
+    command: >
+      bash -c "uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - db
+      - redis
+
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: multitasker
+      POSTGRES_PASSWORD: 123
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+    networks:
+      - app-network
+  redis:
+    image: redis:6
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - app-network
+
+  celery:
+    build: .
+
+    command: celery -A src.utils.celery_tasks.celery_app worker --loglevel=INFO
+
+    volumes:
+      - .:/app
+
+    depends_on:
+      - redis
+
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge

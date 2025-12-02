@@ -11,3 +11,5 @@
 - REDIS_HOST на localhost
 - DATABASE_HOST на localhost
 - Запустить backend/src/main.py
+
+По умолчанию создается аккаунт админа admin@example.com с паролем 12345

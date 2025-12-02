@@ -12,8 +12,8 @@ async def check_db_connection():
     db_config = {
         'user': settings.DATABASE_USER,
         'password': settings.DATABASE_PASSWORD,
-        'host': 'localhost',
-        'port': 5432,
+        'host': settings.DATABASE_HOST,
+        'port': settings.DATABASE_PORT,
         'database': 'postgres'
     }
 

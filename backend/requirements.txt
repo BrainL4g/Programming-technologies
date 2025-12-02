@@ -8,8 +8,9 @@ asyncpg==0.30.0
 bcrypt==4.0.1
 celery==5.5.1
 aioredis==2.0.1
-fastapi[all]
+fastapi==0.115.11
 passlib==1.7.4
-uvicorn
-pydantic-settings
-fastapi-mail
+uvicorn==0.34.0
+pydantic-settings==2.8.1
+fastapi-mail==1.4.2
+asgiref==3.8.1

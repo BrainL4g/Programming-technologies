@@ -1,1 +1,13 @@
 # Programming-technologies
+
+Запуск через докер:  
+из папки backend команда  
+- docker compose up --build
+
+Без докера  
+Изменить в backend/.env :
+- DATABASE_PASSWORD на свой пароль
+- DATABASE_USER на свой логин
+- REDIS_HOST на localhost
+- DATABASE_HOST на localhost
+- Запустить backend/src/main.py

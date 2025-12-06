@@ -10,7 +10,6 @@ from backend.src.exceptions import register_auth_exception_handlers
 from backend.src.pre_start import backend_pre_start
 from backend.src.utils.mock_data import mocking_data
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Инициализация бд, таблиц

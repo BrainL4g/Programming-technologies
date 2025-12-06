@@ -1,10 +1,11 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
+
 from backend.src.api.dependecies.database import get_db_session
 from backend.src.core.security import verify_token
-from backend.src.repository.user import UserCrud
 from backend.src.db.models import User
-from backend.src.exceptions import UserNotFound, InsufficientPrivileges
+from backend.src.exceptions import InsufficientPrivileges, UserNotFound
+from backend.src.repository.user import UserCrud
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 

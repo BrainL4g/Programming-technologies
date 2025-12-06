@@ -1,15 +1,19 @@
 import asyncio
-import sys
 import os
+import sys
 from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload, joinedload
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
+from sqlalchemy.orm import joinedload, selectinload
+
 from backend.src.core.config import settings
 from backend.src.core.security import get_password_hash
-from backend.src.db.database import Base, engine, SessionLocal
+from backend.src.db.database import Base, SessionLocal, engine
+from backend.src.db.models import (Category, Favorite, Feature, Product,
+                                   Storelink, User)
 from backend.src.pre_start import init_models
-from backend.src.db.models import User, Favorite, Product, Category, Feature, Storelink
 
 
 async def insert_test_data(session: AsyncSession):

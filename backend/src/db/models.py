@@ -1,10 +1,11 @@
+from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer, String, ForeignKey, DateTime
-from sqlalchemy.types import Text, Float
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import Float, Text
+
 from backend.src.db.database import Base
-from datetime import datetime, timezone
 
 
 class User(Base):

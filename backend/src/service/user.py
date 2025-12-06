@@ -1,10 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.repository.user import UserCrud
-from backend.src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
 from backend.src.core.security import verify_password
 from backend.src.db.models import User
-from backend.src.exceptions import UserNotFound, InsufficientPrivileges
+from backend.src.exceptions import InsufficientPrivileges, UserNotFound
+from backend.src.repository.user import UserCrud
+from backend.src.schema.user import (UserCreateVerify, UserUpdate,
+                                     UserUpdatePassword)
 
 
 class UserService:

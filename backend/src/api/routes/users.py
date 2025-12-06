@@ -1,14 +1,12 @@
-from fastapi import APIRouter, Depends, status, UploadFile, File
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.schema.auth import Message
 from backend.src.api.dependecies.database import get_db_session
-from backend.src.api.dependecies.user import (
-    get_current_user,
-    get_current_active_superuser,
-)
-from backend.src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
-from backend.src.schema.user import UserResponse
+from backend.src.api.dependecies.user import (get_current_active_superuser,
+                                              get_current_user)
+from backend.src.schema.auth import Message
+from backend.src.schema.user import (UserCreateVerify, UserResponse,
+                                     UserUpdate, UserUpdatePassword)
 from backend.src.service.user import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])

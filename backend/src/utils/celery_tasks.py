@@ -2,8 +2,9 @@ import logging
 
 from asgiref.sync import async_to_sync
 from celery import Celery
-from backend.src.utils.mail import generate_reset_password_email, mail
+
 from backend.src.core.config import settings
+from backend.src.utils.mail import generate_reset_password_email, mail
 
 logger = logging.getLogger(__name__)
 

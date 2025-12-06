@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from backend.src.schema.user import UserCreate, UserPasswordReset, UserResponse
-from backend.src.schema.auth import Message, Token
 from backend.src.api.dependecies.database import get_db_session
 from backend.src.api.dependecies.user import oauth2_scheme
+from backend.src.schema.auth import Message, Token
+from backend.src.schema.user import UserCreate, UserPasswordReset, UserResponse
 from backend.src.service.auth import AuthService
 
 router = APIRouter(prefix="", tags=["auth"])

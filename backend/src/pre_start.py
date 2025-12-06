@@ -1,13 +1,16 @@
-from fastapi import FastAPI
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import text, select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+import asyncio
+
 import asyncpg
+from fastapi import FastAPI
+from sqlalchemy import select, text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
+
 from backend.src.core.config import settings
 from backend.src.core.security import get_password_hash
+from backend.src.db.database import Base, SessionLocal, engine
 from backend.src.db.models import *
-from backend.src.db.database import engine, Base, SessionLocal
-import asyncio
 
 
 async def check_db_connection():

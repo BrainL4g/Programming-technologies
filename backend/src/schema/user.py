@@ -1,15 +1,10 @@
-from pydantic import (
-    BaseModel,
-    EmailStr,
-    ConfigDict,
-    Field,
-    field_validator,
-    ValidationInfo,
-    model_validator,
-)
-from backend.src.exceptions import PasswordsDoNotMatch
-from typing import Optional
 import re
+from typing import Optional
+
+from pydantic import (BaseModel, ConfigDict, EmailStr, Field, ValidationInfo,
+                      field_validator, model_validator)
+
+from backend.src.exceptions import PasswordsDoNotMatch
 
 
 def validate_password(password: str):

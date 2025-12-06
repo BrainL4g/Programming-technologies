@@ -1,7 +1,8 @@
-from pydantic import PostgresDsn, field_validator, computed_field
-from pydantic_settings import BaseSettings, SettingsConfigDict
-import secrets
 import os
+import secrets
+
+from pydantic import PostgresDsn, computed_field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DOTENV = os.path.join(os.path.dirname(__file__), "../../.env")
 

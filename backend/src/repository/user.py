@@ -46,7 +46,7 @@ class UserCRUDRepository:
     async def update_user_password(
             self, user: User, password: str, db: AsyncSession
     ) -> User:
-        setattr(user, "hashed_password", get_password_hash(password))
+        setattr(user, "password", get_password_hash(password))
         await db.commit()
         return user
 

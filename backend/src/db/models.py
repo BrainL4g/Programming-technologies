@@ -1,10 +1,12 @@
+from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer, String, ForeignKey, DateTime
-from sqlalchemy.types import Text, Float
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import Float, Text
+
 from backend.src.db.database import Base
-from datetime import datetime, timezone
+
 
 class User(Base):
     __tablename__ = "users"
@@ -22,8 +24,9 @@ class User(Base):
         secondaryjoin="Favorite.product_id == Product.id",
         back_populates="users_who_favorited",
         lazy="selectin",
-        viewonly=True
+        viewonly=True,
     )
+
 
 class Favorite(Base):
     __tablename__ = "favorite"
@@ -32,13 +35,14 @@ class Favorite(Base):
     product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     notificate: Mapped[bool] = mapped_column(default=False)
 
     owner: Mapped["User"] = relationship(foreign_keys=[user_id], lazy="selectin")
-    fav_product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
+    fav_product: Mapped["Product"] = relationship(
+        foreign_keys=[product_id], lazy="selectin"
+    )
 
 
 class Product(Base):
@@ -56,7 +60,7 @@ class Product(Base):
         secondaryjoin="Favorite.user_id == User.id",
         back_populates="fav_products",
         lazy="selectin",
-        viewonly=True
+        viewonly=True,
     )
 
     categories: Mapped[list["Category"]] = relationship(
@@ -65,20 +69,17 @@ class Product(Base):
         back_populates="products",
         cascade="all, delete",
         overlaps="product_categories",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     features: Mapped[list["Feature"]] = relationship(
-        back_populates="product",
-        cascade="all, delete",
-        lazy="selectin"
+        back_populates="product", cascade="all, delete", lazy="selectin"
     )
 
     storelinks: Mapped[list["Storelink"]] = relationship(
-        back_populates="product",
-        cascade="all, delete",
-        lazy="selectin"
+        back_populates="product", cascade="all, delete", lazy="selectin"
     )
+
 
 class CategoryProduct(Base):
     __tablename__ = "category_product"
@@ -86,6 +87,7 @@ class CategoryProduct(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("category.id"))
+
 
 class Category(Base):
     __tablename__ = "category"
@@ -100,15 +102,13 @@ class Category(Base):
         secondary="category_product",
         back_populates="categories",
         overlaps="categories",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     parent: Mapped[Optional["Category"]] = relationship(
-        "Category",
-        remote_side=[id],
-        backref="children",
-        lazy="selectin"
+        "Category", remote_side=[id], backref="children", lazy="selectin"
     )
+
 
 class Feature(Base):
     __tablename__ = "feature"
@@ -118,7 +118,10 @@ class Feature(Base):
     unit: Mapped[str] = mapped_column(String(255))
     product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
 
-    product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
+    product: Mapped["Product"] = relationship(
+        foreign_keys=[product_id], lazy="selectin"
+    )
+
 
 class Storelink(Base):
     __tablename__ = "storelink"
@@ -129,10 +132,9 @@ class Storelink(Base):
     storename: Mapped[str] = mapped_column(String(255))
     product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
-
-
+    product: Mapped["Product"] = relationship(
+        foreign_keys=[product_id], lazy="selectin"
+    )

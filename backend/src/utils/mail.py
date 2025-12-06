@@ -1,6 +1,8 @@
-from fastapi_mail import FastMail, ConnectionConfig, MessageSchema, MessageType
-from backend.src.core.config import settings
 from pathlib import Path
+
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+
+from backend.src.core.config import settings
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -19,6 +21,7 @@ mail_config = ConnectionConfig(
 )
 
 mail = FastMail(config=mail_config)
+
 
 def generate_reset_password_email(recipients: list[str], code: str):
 

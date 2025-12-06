@@ -1,30 +1,27 @@
 import asyncio
-import sys
-import os
-from datetime import datetime, timezone
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload, joinedload
-from backend.src.core.config import settings
+
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import (AsyncSession)
+from sqlalchemy.orm import selectinload
+
 from backend.src.core.security import get_password_hash
-from backend.src.db.database import Base, engine, SessionLocal
-from backend.src.pre_start import init_models
-from backend.src.db.models import User, Favorite, Product, Category, Feature, Storelink
+from backend.src.db.database import Base, SessionLocal, engine
+from backend.src.db.models import (Category, Favorite, Feature, Product,
+                                   Storelink, User)
+
 
 async def insert_test_data(session: AsyncSession):
     """Вставка тестовых данных в базу"""
 
     # =============== 1. СОЗДАЕМ ПОЛЬЗОВАТЕЛЕЙ ===============
     user1 = User(
-        email="ivan@example.com",
-        password="hashed_password_123",
-        username="ivan_ivanov"
+        email="ivan@example.com", password="hashed_password_123", username="ivan_ivanov"
     )
 
     user2 = User(
         email="anna@example.com",
         password="hashed_password_456",
-        username="anna_petrova"
+        username="anna_petrova",
     )
 
     session.add_all([user1, user2])
@@ -39,15 +36,11 @@ async def insert_test_data(session: AsyncSession):
 
     # Подкатегории
     laptops = Category(
-        name="Ноутбуки",
-        description="Портативные компьютеры",
-        parent=computers
+        name="Ноутбуки", description="Портативные компьютеры", parent=computers
     )
 
     tablets = Category(
-        name="Планшеты",
-        description="Планшетные компьютеры",
-        parent=electronics
+        name="Планшеты", description="Планшетные компьютеры", parent=electronics
     )
 
     session.add_all([electronics, computers, smartphones, laptops, tablets])
@@ -57,19 +50,15 @@ async def insert_test_data(session: AsyncSession):
     product1 = Product(
         name="MacBook Pro 16",
         description="Мощный ноутбук для профессионалов",
-        brand="Apple"
+        brand="Apple",
     )
 
     product2 = Product(
-        name="iPhone 15 Pro",
-        description="Флагманский смартфон",
-        brand="Apple"
+        name="iPhone 15 Pro", description="Флагманский смартфон", brand="Apple"
     )
 
     product3 = Product(
-        name="Samsung Galaxy S24",
-        description="Андроид смартфон",
-        brand="Samsung"
+        name="Samsung Galaxy S24", description="Андроид смартфон", brand="Samsung"
     )
 
     # Привязываем категории к продуктам
@@ -81,23 +70,11 @@ async def insert_test_data(session: AsyncSession):
     await session.commit()
 
     # =============== 4. СОЗДАЕМ ХАРАКТЕРИСТИКИ ===============
-    feature1 = Feature(
-        name="Оперативная память",
-        unit="ГБ",
-        product_id=product1.id
-    )
+    feature1 = Feature(name="Оперативная память", unit="ГБ", product_id=product1.id)
 
-    feature2 = Feature(
-        name="Диагональ экрана",
-        unit="дюймов",
-        product_id=product1.id
-    )
+    feature2 = Feature(name="Диагональ экрана", unit="дюймов", product_id=product1.id)
 
-    feature3 = Feature(
-        name="Объем памяти",
-        unit="ГБ",
-        product_id=product2.id
-    )
+    feature3 = Feature(name="Объем памяти", unit="ГБ", product_id=product2.id)
 
     session.add_all([feature1, feature2, feature3])
     await session.commit()
@@ -107,41 +84,34 @@ async def insert_test_data(session: AsyncSession):
         url="https://store.apple.com/macbook-pro",
         price=249999.99,
         storename="Apple Store",
-        product_id=product1.id
+        product_id=product1.id,
     )
 
     storelink2 = Storelink(
         url="https://citilink.ru/macbook-pro",
         price=239999.00,
         storename="Ситилинк",
-        product_id=product1.id
+        product_id=product1.id,
     )
 
     storelink3 = Storelink(
         url="https://mvideo.ru/iphone-15",
         price=119999.50,
         storename="М.Видео",
-        product_id=product2.id
+        product_id=product2.id,
     )
 
     session.add_all([storelink1, storelink2, storelink3])
     await session.commit()
 
     # =============== 6. СОЗДАЕМ ИЗБРАННОЕ ===============
-    favorite1 = Favorite(
-        user_id=user1.id,
-        product_id=product1.id,
-        notificate=True
-    )
+    favorite1 = Favorite(user_id=user1.id, product_id=product1.id, notificate=True)
 
-    favorite2 = Favorite(
-        user_id=user2.id,
-        product_id=product2.id,
-        notificate=False
-    )
+    favorite2 = Favorite(user_id=user2.id, product_id=product2.id, notificate=False)
 
     session.add_all([favorite1, favorite2])
     await session.commit()
+
 
 async def run_select_queries(session: AsyncSession):
     """Выполнение SELECT запросов для тестирования"""
@@ -156,25 +126,25 @@ async def run_select_queries(session: AsyncSession):
     result = await session.execute(select(User))
     users = result.scalars().all()
     for user in users:
-        print(f"User: id={user.id}, email={user.email}, username={user.username}, fav_products={user.fav_products}")
+        print(
+            f"User: id={user.id}, email={user.email}, username={user.username}, fav_products={user.fav_products}"
+        )
 
     # 2. Все продукты с категориями
     print("\n2. ВСЕ ПРОДУКТЫ С КАТЕГОРИЯМИ:")
     print("-" * 40)
-    result = await session.execute(
-        select(Product).options()
-    )
+    result = await session.execute(select(Product).options())
     products = result.scalars().all()
     for product in products:
         category_names = [cat.name for cat in product.categories]
-        print(f"Product: id={product.id}, name={product.name}, categories={category_names}, features={product.features}, storelinks={product.storelinks}")
+        print(
+            f"Product: id={product.id}, name={product.name}, categories={category_names}, features={product.features}, storelinks={product.storelinks}"
+        )
 
     # 3. Продукты конкретного пользователя
     print("\n3. ПРОДУКТЫ ПОЛЬЗОВАТЕЛЯ IVAN:")
     print("-" * 40)
-    result = await session.execute(
-        select(User).where(User.email == "ivan@example.com")
-    )
+    result = await session.execute(select(User).where(User.email == "ivan@example.com"))
     user = result.scalar_one()
     for fav in user.fav_products:
         print(f"Product: {fav.name} (ID: {fav.id})")
@@ -183,8 +153,7 @@ async def run_select_queries(session: AsyncSession):
     print("\n4. КАТЕГОРИИ С ПРОДУКТАМИ:")
     print("-" * 40)
     result = await session.execute(
-        select(Category)
-        .where(Category.name.in_(["Электроника", "Смартфоны"]))
+        select(Category).where(Category.name.in_(["Электроника", "Смартфоны"]))
     )
     categories = result.scalars().all()
     for category in categories:
@@ -195,9 +164,7 @@ async def run_select_queries(session: AsyncSession):
     print("\n5. ИЕРАРХИЯ КАТЕГОРИЙ:")
     print("-" * 40)
     result = await session.execute(
-        select(Category).options(
-            selectinload(Category.children)
-        )
+        select(Category).options(selectinload(Category.children))
     )
     all_categories = result.scalars().all()
     for cat in all_categories:
@@ -208,10 +175,7 @@ async def run_select_queries(session: AsyncSession):
     # 6. Ссылки на магазины с ценами
     print("\n6. ЦЕНЫ НА ПРОДУКТЫ В МАГАЗИНАХ:")
     print("-" * 40)
-    result = await session.execute(
-        select(Storelink)
-        .order_by(Storelink.price)
-    )
+    result = await session.execute(select(Storelink).order_by(Storelink.price))
     storelinks = result.scalars().all()
     for link in storelinks:
         print(f"{link.product.name}: {link.storename} - {link.price} руб.")
@@ -219,16 +183,16 @@ async def run_select_queries(session: AsyncSession):
     # 7. Избранное пользователей
     print("\n7. ИЗБРАННОЕ ПОЛЬЗОВАТЕЛЕЙ:")
     print("-" * 40)
-    result = await session.execute(
-        select(Favorite)
-    )
+    result = await session.execute(select(Favorite))
     favorites = result.unique().scalars().all()
     for fav in favorites:
-        print(f"Favorite #{fav.id}: User={fav.owner.email}, Notify={fav.notificate}, Product = {fav.fav_product}")
+        print(
+            f"Favorite #{fav.id}: User={fav.owner.email}, Notify={fav.notificate}, Product = {fav.fav_product}"
+        )
 
     # Средняя цена по магазинам
     result = await session.execute(
-        select(Storelink.storename, func.avg(Storelink.price).label('avg_price'))
+        select(Storelink.storename, func.avg(Storelink.price).label("avg_price"))
         .group_by(Storelink.storename)
         .order_by(func.avg(Storelink.price).desc())
     )
@@ -240,10 +204,7 @@ async def run_select_queries(session: AsyncSession):
     print("\n9. ПОЛНАЯ ИНФОРМАЦИЯ О ПРОДУКТАХ:")
     print("-" * 40)
 
-    result = await session.execute(
-        select(Product)
-        .order_by(Product.name)
-    )
+    result = await session.execute(select(Product).order_by(Product.name))
     all_products = result.scalars().all()
 
     for product in all_products:
@@ -251,15 +212,16 @@ async def run_select_queries(session: AsyncSession):
         print(f"   Описание: {product.description}")
         print(f"   Категории: {[c.name for c in product.categories]}")
         if product.features:
-            print(f"   Характеристики:")
+            print("   Характеристики:")
             for feat in product.features:
                 print(f"     • {feat.name} ({feat.unit})")
         if product.storelinks:
-            print(f"   Магазины:")
+            print("   Магазины:")
             for store in product.storelinks:
                 print(f"     • {store.storename}: {store.price} руб.")
         else:
-            print(f"   Магазины: нет данных")
+            print("   Магазины: нет данных")
+
 
 async def create_admin_user():
     async with SessionLocal() as db:
@@ -281,6 +243,7 @@ async def create_admin_user():
             await db.commit()
             await db.refresh(new_admin)
             print("Админ admin@example.com с паролем 12345 создан.")
+
 
 async def mocking_data():
     engine.echo = False

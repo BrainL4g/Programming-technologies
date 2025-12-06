@@ -135,8 +135,12 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.env
+backend/.env
+backend/temp
 .envrc
 .venv
+env/
 venv/
 ENV/
 env.bak/
@@ -180,9 +184,9 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore
 #  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  and can be added to the global gitignore or merged into this file. However, if you prefer,
 #  you could uncomment the following to ignore the entire vscode folder
 # .vscode/
 
@@ -204,4 +208,34 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# Дополнительные логи
+*.log
+*.tmp
+*.temp
+*.pid
+# Pytest кэш
+.cache/
+.pytest_cache/
+
+# Отчёты pytest-cov
+coverage/
+*.coverage
+coverage_html_report/
+# SQLite базы данных, если используешь для локального тестирования
+*.sqlite3
+*.db
+
+# Debug-тулзы
+debug.log
+
+# Docker
+docker-compose.override.yml
+.docker/
+.dockerignore
 .idea/
+migrations/__pycache__/
+migrations/*.pyc
+db/*.db
+alembic.log
+/alembic.ini
+/migrations/

@@ -30,19 +30,13 @@ class StoreResponse(StoreBase):
 
 
 class OfferBase(BaseModel):
-    external_id: str
-    product_name: str
     price: float
     old_price: Optional[float] = None
     currency: str = "RUB"
     available: bool = True
     in_stock: int = 0
-    category: Optional[str] = None
-    brand: Optional[str] = None
+    product_id: int
     url: AnyUrl
-    image_url: Optional[AnyUrl] = None
-    description: Optional[str] = None
-    specifications: Optional[dict] = None
 
 
 class OfferCreate(OfferBase):
@@ -50,8 +44,6 @@ class OfferCreate(OfferBase):
 
 
 class OfferUpdate(BaseModel):
-    external_id: Optional[str] = None
-    product_name: Optional[str] = None
     price: Optional[float] = None
     old_price: Optional[float] = None
     available: Optional[bool] = None

@@ -23,7 +23,7 @@ class FavoriteProductResponse(BaseModel):
     description: str
     brand: str
 
-    features: Annotated[List[FeatureResponse], Field(default_factory=list)]
-    storelinks: Annotated[List[StorelinkResponse], Field(default_factory=list)]
+    # features: Annotated[List[FeatureResponse], Field(default_factory=list)]
+    # storelinks: Annotated[List[StorelinkResponse], Field(default_factory=list)]
 
     model_config = ConfigDict(from_attributes=True)

@@ -12,7 +12,7 @@ async def check_db_connection():
         "password": settings.DATABASE_PASSWORD,
         "host": settings.DATABASE_HOST,
         "port": settings.DATABASE_PORT,
-        "database": "postgres",
+        "database": "postgres"
     }
 
     db_name = "tp"

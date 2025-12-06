@@ -1,10 +1,9 @@
-
 import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from src.core.security import get_password_hash
-from src.db.models import User
-from src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
+from backend.src.core.security import get_password_hash
+from backend.src.db.models import User
+from backend.src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
 
 class UserCRUDRepository():
     async def create_user(self, user_create: UserCreateVerify, db: AsyncSession) -> User:

@@ -1,17 +1,16 @@
-# src/core/celery.py
 import logging
 
 from asgiref.sync import async_to_sync
 from celery import Celery
-from src.utils.mail import generate_reset_password_email, mail
-from src.core.config import settings
+from backend.src.utils.mail import generate_reset_password_email, mail
+from backend.src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 celery_app = Celery()
 celery_app.conf.update(
     broker_url=settings.redis_url,
-    result_backend=settings.redis_url
+    result_backend=settings.redis_urlD
 )
 
 @celery_app.task()

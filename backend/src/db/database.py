@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-from src.core.config import settings
+from backend.src.core.config import settings
 import redis
 
 engine = create_async_engine(str(settings.DATABASE_URL), echo=True)

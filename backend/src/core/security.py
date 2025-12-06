@@ -2,9 +2,9 @@ import random, string, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from typing import Union, Any
-from src.core.config import settings
-from src.exceptions import InvalidToken, TokenExpired
-from src.db.redis_client.service import redis_service
+from backend.src.core.config import settings
+from backend.src.exceptions import InvalidToken, TokenExpired
+from backend.src.db.redis_client.service import redis_service
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

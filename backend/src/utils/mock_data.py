@@ -5,11 +5,11 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload, joinedload
-from src.core.config import settings
-from src.core.security import get_password_hash
-from src.db.database import Base, engine, SessionLocal
-from src.pre_start import init_models
-from src.db.models import User, Favorite, Product, Category, Feature, Storelink
+from backend.src.core.config import settings
+from backend.src.core.security import get_password_hash
+from backend.src.db.database import Base, engine, SessionLocal
+from backend.src.pre_start import init_models
+from backend.src.db.models import User, Favorite, Product, Category, Feature, Storelink
 
 async def insert_test_data(session: AsyncSession):
     """Вставка тестовых данных в базу"""

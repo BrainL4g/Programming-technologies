@@ -11,7 +11,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 async def get_current_user(
-    session=Depends(get_db_session), token=Depends(oauth2_scheme)
+        session=Depends(get_db_session), token=Depends(oauth2_scheme)
 ) -> User:
     id = await verify_token(token)
     user = await UserCrud.get_user_by_id(user_id=int(id), db=session)

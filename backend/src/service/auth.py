@@ -2,11 +2,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.security import (create_access_token,
-                                       generate_random_code, verify_password)
+                               generate_random_code, verify_password)
 from src.db.models import User
 from src.db.redis_client.service import redis_service
 from src.exceptions import (InvalidCredentials, ResetCodeInvalid, UserAlreadyExists,
-                                    UserNotFound)
+                            UserNotFound)
 from src.repository.user import UserCrud
 from src.schema.user import (UserCreate, UserPasswordReset)
 from src.utils.celery_tasks import send_password_reset_email
@@ -14,7 +14,7 @@ from src.utils.celery_tasks import send_password_reset_email
 
 class AuthService:
     async def login(
-        self, form_data: OAuth2PasswordRequestForm, session: AsyncSession
+            self, form_data: OAuth2PasswordRequestForm, session: AsyncSession
     ) -> str:
         user = await UserCrud.get_user_by_email(email=form_data.username, db=session)
         if user and verify_password(form_data.password, user.password):
@@ -41,7 +41,7 @@ class AuthService:
         send_password_reset_email.delay(recipient=email, code=reset_code)
 
     async def confirm_password_reset(
-        self, user_reset: UserPasswordReset, session: AsyncSession
+            self, user_reset: UserPasswordReset, session: AsyncSession
     ) -> None:
         user = await UserCrud.get_user_by_email(email=user_reset.email, db=session)
         if not user:

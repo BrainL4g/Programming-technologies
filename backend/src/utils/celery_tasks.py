@@ -2,8 +2,8 @@ import logging
 
 from asgiref.sync import async_to_sync
 from celery import Celery
-from src.utils.mail import generate_reset_password_email, mail
 from src.core.config import settings
+from src.utils.mail import generate_reset_password_email, mail
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +12,7 @@ celery_app.conf.update(
     broker_url=settings.redis_url,
     result_backend=settings.redis_url
 )
+
 
 @celery_app.task()
 def send_password_reset_email(recipient: str, code: str):

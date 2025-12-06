@@ -8,7 +8,6 @@ DOTENV = os.path.join(os.path.dirname(__file__), "../../.env")
 
 
 class Config(BaseSettings):
-
     DATABASE_PASSWORD: str
     DATABASE_USER: str
     DATABASE_HOST: str = "localhost"

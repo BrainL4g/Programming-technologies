@@ -8,7 +8,7 @@ from src.schema.user import (UserCreateVerify, UserUpdate)
 
 class UserCRUDRepository:
     async def create_user(
-        self, user_create: UserCreateVerify, db: AsyncSession
+            self, user_create: UserCreateVerify, db: AsyncSession
     ) -> User:
         user = User(
             email=user_create.email,
@@ -35,7 +35,7 @@ class UserCRUDRepository:
         return query.scalars().all()
 
     async def update_user(
-        self, user: User, user_update: UserUpdate, db: AsyncSession
+            self, user: User, user_update: UserUpdate, db: AsyncSession
     ) -> User:
         user_data = user_update.model_dump(exclude_unset=True)
         for k, v in user_data.items():
@@ -44,7 +44,7 @@ class UserCRUDRepository:
         return user
 
     async def update_user_password(
-        self, user: User, password: str, db: AsyncSession
+            self, user: User, password: str, db: AsyncSession
     ) -> User:
         setattr(user, "hashed_password", get_password_hash(password))
         await db.commit()

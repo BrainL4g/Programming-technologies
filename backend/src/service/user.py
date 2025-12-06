@@ -5,7 +5,7 @@ from src.db.models import User
 from src.exceptions import InsufficientPrivileges, UserNotFound
 from src.repository.user import UserCrud
 from src.schema.user import (UserCreateVerify, UserUpdate,
-                                     UserUpdatePassword)
+                             UserUpdatePassword)
 
 
 class UserService:
@@ -28,12 +28,12 @@ class UserService:
         return await UserCrud.get_users(db, skip, limit)
 
     async def update_user(
-        self, db: AsyncSession, user: User, update_data: UserUpdate
+            self, db: AsyncSession, user: User, update_data: UserUpdate
     ) -> User:
         return await UserCrud.update_user(user, update_data, db)
 
     async def update_password(
-        self, db: AsyncSession, user: User, update_data: UserUpdatePassword
+            self, db: AsyncSession, user: User, update_data: UserUpdatePassword
     ) -> User:
         if not verify_password(update_data.password, user.hashed_password):
             raise InsufficientPrivileges()

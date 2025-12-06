@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 
-from backend.src.core.config import settings
+from src.core.config import settings
 
 
 def create_redis():

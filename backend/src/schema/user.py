@@ -1,8 +1,6 @@
-import re
 from typing import Optional
 
-from pydantic import (BaseModel, ConfigDict, EmailStr, Field, ValidationInfo,
-                      field_validator, model_validator)
+from pydantic import (BaseModel, ConfigDict, EmailStr, model_validator)
 
 from backend.src.exceptions import PasswordsDoNotMatch
 

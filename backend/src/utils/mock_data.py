@@ -1,19 +1,13 @@
 import asyncio
-import os
-import sys
-from datetime import datetime, timezone
 
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.ext.asyncio import (AsyncSession)
+from sqlalchemy.orm import selectinload
 
-from backend.src.core.config import settings
 from backend.src.core.security import get_password_hash
 from backend.src.db.database import Base, SessionLocal, engine
 from backend.src.db.models import (Category, Favorite, Feature, Product,
                                    Storelink, User)
-from backend.src.pre_start import init_models
 
 
 async def insert_test_data(session: AsyncSession):
@@ -218,15 +212,15 @@ async def run_select_queries(session: AsyncSession):
         print(f"   Описание: {product.description}")
         print(f"   Категории: {[c.name for c in product.categories]}")
         if product.features:
-            print(f"   Характеристики:")
+            print("   Характеристики:")
             for feat in product.features:
                 print(f"     • {feat.name} ({feat.unit})")
         if product.storelinks:
-            print(f"   Магазины:")
+            print("   Магазины:")
             for store in product.storelinks:
                 print(f"     • {store.storename}: {store.price} руб.")
         else:
-            print(f"   Магазины: нет данных")
+            print("   Магазины: нет данных")
 
 
 async def create_admin_user():

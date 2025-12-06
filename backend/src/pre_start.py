@@ -1,15 +1,9 @@
-import asyncio
 
 import asyncpg
 from fastapi import FastAPI
-from sqlalchemy import select, text
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
 
 from backend.src.core.config import settings
-from backend.src.core.security import get_password_hash
-from backend.src.db.database import Base, SessionLocal, engine
+from backend.src.db.database import Base, engine
 from backend.src.db.models import *
 
 

@@ -1,4 +1,3 @@
-from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,13 +5,10 @@ from backend.src.core.security import (create_access_token,
                                        generate_random_code, verify_password)
 from backend.src.db.models import User
 from backend.src.db.redis_client.service import redis_service
-from backend.src.exceptions import (InvalidCredentials, PasswordsDoNotMatch,
-                                    ResetCodeInvalid, UserAlreadyExists,
+from backend.src.exceptions import (InvalidCredentials, ResetCodeInvalid, UserAlreadyExists,
                                     UserNotFound)
 from backend.src.repository.user import UserCrud
-from backend.src.schema.auth import Message, Token
-from backend.src.schema.user import (UserCreate, UserPasswordReset,
-                                     UserUpdatePassword)
+from backend.src.schema.user import (UserCreate, UserPasswordReset)
 from backend.src.utils.celery_tasks import send_password_reset_email
 
 

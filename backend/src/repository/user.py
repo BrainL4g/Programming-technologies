@@ -1,11 +1,9 @@
 import sqlalchemy
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.core.security import get_password_hash
 from backend.src.db.models import User
-from backend.src.schema.user import (UserCreateVerify, UserUpdate,
-                                     UserUpdatePassword)
+from backend.src.schema.user import (UserCreateVerify, UserUpdate)
 
 
 class UserCRUDRepository:

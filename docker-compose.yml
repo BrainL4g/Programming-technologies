@@ -28,7 +28,7 @@ services:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_DB: multitasker
+      POSTGRES_DB: tp
       POSTGRES_PASSWORD: 123
     ports:
       - "5432:5432"

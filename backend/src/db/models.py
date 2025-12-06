@@ -1,6 +1,10 @@
-from datetime import datetime, timezone
+from datetime import timezone
 from typing import Optional
 
+from uuid import uuid4
+from datetime import datetime
+from sqlalchemy import Boolean,JSON, Numeric
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import Float, Text
@@ -137,3 +141,53 @@ class Storelink(Base):
     product: Mapped["Product"] = relationship(
         foreign_keys=[product_id], lazy="selectin"
     )
+
+
+class Store(Base):
+    __tablename__ = "stores"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    domain: Mapped[str] = mapped_column(String(255), unique=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_sync: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    offers: Mapped[list["Offer"]] = relationship("Offer", back_populates="store", cascade="all, delete-orphan", lazy="selectin")
+
+
+class Offer(Base):
+    __tablename__ = "offers"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    external_id: Mapped[str] = mapped_column(String(255), index=True)
+    product_name: Mapped[str] = mapped_column(String(512))
+    store_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("stores.id", ondelete="CASCADE"))
+    price: Mapped[float] = mapped_column(Numeric(12, 2))
+    old_price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
+    currency: Mapped[str] = mapped_column(String(3), default="RUB")
+    available: Mapped[bool] = mapped_column(Boolean, default=True)
+    in_stock: Mapped[int] = mapped_column(default=0)
+    category: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    brand: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    url: Mapped[str] = mapped_column(Text)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    specifications: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    store: Mapped["Store"] = relationship("Store", back_populates="offers")
+    price_history: Mapped[list["PriceHistory"]] = relationship("PriceHistory", back_populates="offer", cascade="all, delete-orphan", lazy="selectin")
+
+
+class PriceHistory(Base):
+    __tablename__ = "price_history"
+
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    offer_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("offers.id", ondelete="CASCADE"))
+    price: Mapped[float] = mapped_column(Numeric(12, 2))
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
+
+    offer: Mapped["Offer"] = relationship("Offer", back_populates="price_history")

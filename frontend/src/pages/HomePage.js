@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../components/Header';
+import Header from '../components/headers/HeaderGuest';
 import Banner from '../components/Banner';
 import Categories from '../components/Categories';
 import RecommendedSlider from '../components/RecommendedSlider';

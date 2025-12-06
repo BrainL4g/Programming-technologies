@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, Field, field_validator, ValidationInfo, model_validator
-from src.exceptions import PasswordsDoNotMatch
+from backend.src.exceptions import PasswordsDoNotMatch
 from typing import Optional
 import re
 

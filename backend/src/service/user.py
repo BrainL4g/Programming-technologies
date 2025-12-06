@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repository.user import UserCrud
-from src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
-from src.core.security import verify_password
-from src.db.models import User
-from src.exceptions import UserNotFound, InsufficientPrivileges
+from backend.src.repository.user import UserCrud
+from backend.src.schema.user import UserCreateVerify, UserUpdate, UserUpdatePassword
+from backend.src.core.security import verify_password
+from backend.src.db.models import User
+from backend.src.exceptions import UserNotFound, InsufficientPrivileges
 
 class UserService:
     async def create_user(self, db: AsyncSession, user_data: UserCreateVerify) -> User:

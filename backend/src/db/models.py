@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import Integer, String, ForeignKey, DateTime
 from sqlalchemy.types import Text, Float
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-from src.db.database import Base
+from backend.src.db.database import Base
 from datetime import datetime, timezone
 
 class User(Base):

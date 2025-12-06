@@ -4,9 +4,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import (AsyncSession)
 from sqlalchemy.orm import selectinload
 
-from backend.src.core.security import get_password_hash
-from backend.src.db.database import Base, SessionLocal, engine
-from backend.src.db.models import (Category, Favorite, Feature, Product,
+from src.core.security import get_password_hash
+from src.db.database import Base, SessionLocal, engine
+from src.db.models import (Category, Favorite, Feature, Product,
                                    Storelink, User)
 
 

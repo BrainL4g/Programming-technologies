@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 celery_app = Celery()
 celery_app.conf.update(
     broker_url=settings.redis_url,
-    result_backend=settings.redis_urlD
+    result_backend=settings.redis_url
 )
 
 @celery_app.task()

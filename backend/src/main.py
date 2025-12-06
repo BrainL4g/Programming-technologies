@@ -39,9 +39,9 @@ def initialize_backend_application() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(user_router)
     app.include_router(favorites_router)
-    app.include_router(stores_router, prefix="/api/v1")
-    app.include_router(offers_router, prefix="/api/v1")
-    app.include_router(reports_router, prefix="/api/v1")
+    app.include_router(stores_router)
+    app.include_router(offers_router)
+    app.include_router(reports_router)
 
     register_auth_exception_handlers(app)
 

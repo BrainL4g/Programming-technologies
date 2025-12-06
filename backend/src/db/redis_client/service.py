@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import redis.asyncio as redis
-
 from src.core.config import settings
 from src.db.redis_client.redis import pool
 

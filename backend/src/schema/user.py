@@ -1,8 +1,7 @@
 from typing import Optional
 
 from pydantic import (BaseModel, ConfigDict, EmailStr, model_validator)
-
-from backend.src.exceptions import PasswordsDoNotMatch
+from src.exceptions import PasswordsDoNotMatch
 
 
 def validate_password(password: str):

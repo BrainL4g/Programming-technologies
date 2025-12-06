@@ -1,7 +1,7 @@
 import redis.asyncio as redis
 
-from backend.src.db.database import SessionLocal
-from backend.src.db.redis_client.redis import pool
+from src.db.database import SessionLocal
+from src.db.redis_client.redis import pool
 
 
 async def get_db_session():

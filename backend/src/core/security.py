@@ -5,7 +5,6 @@ from typing import Any, Union
 
 import jwt
 from passlib.context import CryptContext
-
 from src.core.config import settings
 from src.db.redis_client.service import redis_service
 from src.exceptions import InvalidToken, TokenExpired

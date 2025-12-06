@@ -3,12 +3,11 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from backend.src.api.routes.auth import router as auth_router
-from backend.src.api.routes.users import router as user_router
-from backend.src.exceptions import register_auth_exception_handlers
-from backend.src.pre_start import backend_pre_start
-from backend.src.utils.mock_data import mocking_data
+from src.api.routes.auth import router as auth_router
+from src.api.routes.users import router as user_router
+from src.exceptions import register_auth_exception_handlers
+from src.pre_start import backend_pre_start
+from src.utils.mock_data import mocking_data
 
 
 @asynccontextmanager

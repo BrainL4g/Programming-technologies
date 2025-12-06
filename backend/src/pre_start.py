@@ -1,10 +1,9 @@
-
 import asyncpg
 from fastapi import FastAPI
 
-from backend.src.core.config import settings
-from backend.src.db.database import Base, engine
-from backend.src.db.models import *
+from src.core.config import settings
+from src.db.database import Base, engine
+from src.db.models import *
 
 
 async def check_db_connection():

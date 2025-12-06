@@ -20,6 +20,7 @@ mail_config = ConnectionConfig(
 
 mail = FastMail(config=mail_config)
 
+
 def generate_reset_password_email(recipients: list[str], code: str):
 
     html = f"<h1>Password recovery code: {code}</h1>"

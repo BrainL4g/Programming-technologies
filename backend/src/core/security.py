@@ -26,19 +26,24 @@ def create_access_token(subject: str | Any) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
+
 async def verify_token(token: str) -> Union[str, Any]:
     if await redis_service.is_token_blacklisted(token):
         raise InvalidToken()
     try:
-        decoded_token = jwt.decode(token, settings.JWT_SECRET, algorithms=settings.JWT_ALG)
+        decoded_token = jwt.decode(
+            token, settings.JWT_SECRET, algorithms=settings.JWT_ALG
+        )
         return decoded_token["sub"]
     except jwt.ExpiredSignatureError:
         raise TokenExpired()
     except jwt.InvalidTokenError:
         raise InvalidToken()
 
+
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def generate_random_code() -> str:
     return "".join(random.choices(string.digits, k=6))

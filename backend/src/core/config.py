@@ -5,6 +5,7 @@ import os
 
 DOTENV = os.path.join(os.path.dirname(__file__), "../../.env")
 
+
 class Config(BaseSettings):
 
     DATABASE_PASSWORD: str
@@ -36,7 +37,7 @@ class Config(BaseSettings):
     @computed_field
     @property
     def DATABASE_URL(self) -> PostgresDsn:
-        password = self.DATABASE_PASSWORD.replace('@', '%40').replace(':', '%3A')
+        password = self.DATABASE_PASSWORD.replace("@", "%40").replace(":", "%3A")
         url = (
             f"postgresql+asyncpg://{self.DATABASE_USER}:{password}"
             f"@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
@@ -46,5 +47,6 @@ class Config(BaseSettings):
     @property
     def redis_url(self) -> str:
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
+
 
 settings = Config()

@@ -3,13 +3,16 @@ import redis.asyncio as redis
 from backend.src.db.redis_client.redis import pool
 from backend.src.core.config import settings
 
+
 class RedisService:
     def __init__(self) -> None:
         self.session = redis.Redis(connection_pool=pool)
 
     async def create_reset_code(self, email: str, code: str) -> str:
         key = f"reset_code:{email}"
-        await self.session.setex(key, timedelta(minutes=settings.EMAIL_RESET_CODE_EXP), code)
+        await self.session.setex(
+            key, timedelta(minutes=settings.EMAIL_RESET_CODE_EXP), code
+        )
         return code
 
     async def get_reset_code(self, email: str) -> str:
@@ -29,5 +32,6 @@ class RedisService:
         key = f"access_token:{access_token}"
         token = await self.session.get(key)
         return token == access_token
+
 
 redis_service = RedisService()

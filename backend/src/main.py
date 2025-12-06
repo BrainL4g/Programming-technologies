@@ -10,6 +10,7 @@ from backend.src.api.routes.auth import router as auth_router
 from backend.src.api.routes.users import router as user_router
 from backend.src.db.database import SessionLocal
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Инициализация бд, таблиц
@@ -39,12 +40,8 @@ def initialize_backend_application() -> FastAPI:
 
     return app
 
+
 app: FastAPI = initialize_backend_application()
 
 if __name__ == "__main__":
-    uvicorn.run(
-        app="main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True
-    )
+    uvicorn.run(app="main:app", host="127.0.0.1", port=8000, reload=True)

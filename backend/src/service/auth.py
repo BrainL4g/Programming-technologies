@@ -7,7 +7,7 @@ from backend.src.exceptions import (
     UserAlreadyExists,
     PasswordsDoNotMatch,
     UserNotFound,
-    ResetCodeInvalid
+    ResetCodeInvalid,
 )
 from backend.src.schema.user import UserCreate, UserPasswordReset, UserUpdatePassword
 from backend.src.db.models import User
@@ -16,14 +16,16 @@ from backend.src.repository.user import UserCrud
 from backend.src.core.security import (
     create_access_token,
     verify_password,
-    generate_random_code
+    generate_random_code,
 )
 from backend.src.db.redis_client.service import redis_service
 from backend.src.utils.celery_tasks import send_password_reset_email
 
 
 class AuthService:
-    async def login(self, form_data: OAuth2PasswordRequestForm, session: AsyncSession) -> str:
+    async def login(
+        self, form_data: OAuth2PasswordRequestForm, session: AsyncSession
+    ) -> str:
         user = await UserCrud.get_user_by_email(email=form_data.username, db=session)
         if user and verify_password(form_data.password, user.password):
             access_token = create_access_token(subject=user.id)
@@ -43,10 +45,14 @@ class AuthService:
         user = await UserCrud.get_user_by_email(email=email, db=session)
         if not user:
             raise UserNotFound()
-        reset_code = await redis_service.create_reset_code(email=user.email, code=generate_random_code())
+        reset_code = await redis_service.create_reset_code(
+            email=user.email, code=generate_random_code()
+        )
         send_password_reset_email.delay(recipient=email, code=reset_code)
 
-    async def confirm_password_reset(self, user_reset: UserPasswordReset, session: AsyncSession) -> None:
+    async def confirm_password_reset(
+        self, user_reset: UserPasswordReset, session: AsyncSession
+    ) -> None:
         user = await UserCrud.get_user_by_email(email=user_reset.email, db=session)
         if not user:
             raise UserNotFound()
@@ -54,9 +60,7 @@ class AuthService:
         if not stored_code or stored_code != user_reset.code:
             raise ResetCodeInvalid()
         await UserCrud.update_user_password(
-            user=user,
-            password=user_reset.new_password,
-            db=session
+            user=user, password=user_reset.new_password, db=session
         )
         await redis_service.delete_reset_code(user.email)
 

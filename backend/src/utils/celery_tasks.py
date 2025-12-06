@@ -9,13 +9,15 @@ logger = logging.getLogger(__name__)
 
 celery_app = Celery()
 celery_app.conf.update(
-    broker_url=settings.redis_url,
-    result_backend=settings.redis_urlD
+    broker_url=settings.redis_url, result_backend=settings.redis_urlD
 )
+
 
 @celery_app.task()
 def send_password_reset_email(recipient: str, code: str):
-    logger.info(f"Task started: Sending password reset email to {recipient} with code {code}")
+    logger.info(
+        f"Task started: Sending password reset email to {recipient} with code {code}"
+    )
     try:
         # Генерация сообщения
         message = generate_reset_password_email([recipient], code)

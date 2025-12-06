@@ -39,9 +39,7 @@ class Favorite(Base):
     notificate: Mapped[bool] = mapped_column(default=False)
 
     owner: Mapped["User"] = relationship(foreign_keys=[user_id], lazy="selectin")
-    fav_product: Mapped["Product"] = relationship(
-        foreign_keys=[product_id], lazy="selectin"
-    )
+    fav_product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
 
 
 class Product(Base):
@@ -79,6 +77,10 @@ class Product(Base):
         back_populates="product", cascade="all, delete", lazy="selectin"
     )
 
+    images: Mapped[list["Attachment"]] = relationship(
+        back_populates="product", cascade="all, delete", lazy="selectin"
+    )
+
 
 class CategoryProduct(Base):
     __tablename__ = "category_product"
@@ -95,6 +97,7 @@ class Category(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(Text)
     parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("category.id"))
+    icon_id: Mapped[Optional[int]] = mapped_column(ForeignKey("attachment.id"))
 
     products: Mapped[list["Product"]] = relationship(
         "Product",
@@ -104,10 +107,12 @@ class Category(Base):
         lazy="selectin",
     )
 
-    parent: Mapped[Optional["Category"]] = relationship(
-        "Category", remote_side=[id], backref="children", lazy="selectin"
-    )
+    parent: Mapped[Optional["Category"]] = relationship("Category",
+                                                        remote_side=[id],
+                                                        backref="children",
+                                                        lazy="selectin")
 
+    icon: Mapped[Optional["Attachment"]] = relationship(foreign_keys=[icon_id], lazy="selectin")
 
 class Feature(Base):
     __tablename__ = "feature"
@@ -117,9 +122,7 @@ class Feature(Base):
     unit: Mapped[str] = mapped_column(String(255))
     product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
 
-    product: Mapped["Product"] = relationship(
-        foreign_keys=[product_id], lazy="selectin"
-    )
+    product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
 
 
 class Storelink(Base):
@@ -134,6 +137,16 @@ class Storelink(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    product: Mapped["Product"] = relationship(
-        foreign_keys=[product_id], lazy="selectin"
+    product: Mapped["Product"] = relationship(foreign_keys=[product_id], lazy="selectin")
+
+class Attachment(Base):
+    __tablename__ = "attachment"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    file_url: Mapped[str] = mapped_column(String(2048))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+    # id продукта, если файл принадлежит продукту, иначе null
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"), nullable=True)
+

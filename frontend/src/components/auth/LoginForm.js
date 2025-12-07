@@ -148,7 +148,7 @@ const styles = {
   switchBtn: {
     background: 'none',
     border: 'none',
-    color: '#1976d2',
+    color: '#05386B',
     cursor: 'pointer',
     fontSize: 14,
     textDecoration: 'underline',

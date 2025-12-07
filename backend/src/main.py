@@ -12,6 +12,9 @@ from src.api.routes.favorites import router as favorites_router
 from src.api.routes.stores import router as stores_router
 from src.api.routes.offers import router as offers_router
 from src.api.routes.reports import router as reports_router
+from src.api.routes.product import router as products_router
+from src.api.routes.category import router as category_router
+from src.api.routes.uploads import router as upload_router
 
 
 @asynccontextmanager
@@ -42,6 +45,9 @@ def initialize_backend_application() -> FastAPI:
     app.include_router(stores_router)
     app.include_router(offers_router)
     app.include_router(reports_router)
+    app.include_router(products_router)
+    app.include_router(category_router)
+    app.include_router(upload_router)
 
     register_auth_exception_handlers(app)
 

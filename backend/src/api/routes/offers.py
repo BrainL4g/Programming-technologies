@@ -5,8 +5,8 @@ from uuid import UUID
 
 from src.api.dependecies.database import get_db_session
 from src.api.dependecies.user import get_current_active_superuser
-from src.service.store import offer_service
-from src.schema.store import OfferCreate, OfferUpdate, OfferResponse, PriceHistoryResponse
+from src.service.offer import offer_service
+from src.schema.offer import OfferCreate, OfferUpdate, OfferResponse, PriceHistoryResponse
 
 router = APIRouter(prefix="/offers", tags=["offers"])
 

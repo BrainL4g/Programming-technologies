@@ -4,8 +4,10 @@ from typing import List
 
 from src.api.dependecies.database import get_db_session
 from src.api.dependecies.user import get_current_active_superuser
-from src.service.store import store_service, offer_service
-from src.schema.store import StoreCreate, StoreUpdate, StoreResponse, OfferResponse
+from src.service.store import store_service
+from src.service.offer import offer_service
+from src.schema.store import StoreCreate, StoreUpdate, StoreResponse
+from src.schema.offer import OfferResponse
 
 router = APIRouter(prefix="/stores", tags=["stores"])
 

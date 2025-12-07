@@ -151,7 +151,7 @@ class Offer(Base):
     last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
-    store: Mapped["Store"] = relationship("Store", back_populates="offers")
+    store: Mapped["Store"] = relationship("Store", back_populates="offers",  lazy="selectin")
     price_history: Mapped[list["PriceHistory"]] = relationship("PriceHistory", back_populates="offer", cascade="all, delete-orphan", lazy="selectin")
     product: Mapped["Product"] = relationship(
         "Product",
@@ -168,4 +168,4 @@ class PriceHistory(Base):
     price: Mapped[float] = mapped_column(Numeric(12, 2))
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
 
-    offer: Mapped["Offer"] = relationship("Offer", back_populates="price_history")
+    offer: Mapped["Offer"] = relationship("Offer", back_populates="price_history",  lazy="selectin")

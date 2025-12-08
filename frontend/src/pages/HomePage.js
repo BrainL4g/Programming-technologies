@@ -1,11 +1,12 @@
 import React from 'react';
-import Header from '../components/headers/HeaderGuest';
+import Header from '../components/Header';
 import Banner from '../components/Banner';
 import Categories from '../components/Categories';
 import RecommendedSlider from '../components/RecommendedSlider';
 import ProductList from '../components/ProductList';
-import Pagination from '../components/Pagination';
 import Footer from '../components/Footer';
+import { products } from "../mocks/products";
+import { recommended } from "../mocks/recommended";
 
 function HomePage() {
   return (
@@ -17,12 +18,11 @@ function HomePage() {
         <Categories />
 
         <div style={styles.rightColumn}>
-          <RecommendedSlider />
-          <ProductList />
+          <RecommendedSlider products={recommended} />
+          <ProductList products={products} title="Популярные товары" />
         </div>
       </main>
 
-      <Pagination />
       <Footer />
     </>
   );

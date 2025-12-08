@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.dependecies.database import get_db_session
 from src.api.dependecies.user import get_current_active_superuser
 from src.schema.product import ProductCreate, ProductUpdate, ProductResponse, ProductListResponse
+from src.schema.price import ProductPricesResponse
 from src.service.product import ProductService
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -54,3 +55,11 @@ async def delete_product(
         admin = Depends(get_current_active_superuser),
 ):
     await ProductService.delete_product(db, product_id)
+
+
+@router.get("/{product_id}/prices", response_model=ProductPricesResponse)
+async def get_product_prices(
+    product_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    return await ProductService.get_product_prices(db, product_id)

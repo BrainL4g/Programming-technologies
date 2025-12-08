@@ -1,11 +1,17 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-export default function HeaderGuest() {
+export default function Header({ user }) {
+  const navigate = useNavigate();
+  const { isAuth } = useAuth();
+
   return (
     <header style={styles.header}>
-
       <div style={styles.left}>
-        <div style={styles.logo}>LOGO</div>
+        <div style={styles.logo} onClick={() => navigate("/")}>
+          BRO
+        </div>
       </div>
 
       <div style={styles.center}>
@@ -16,7 +22,20 @@ export default function HeaderGuest() {
       </div>
 
       <div style={styles.right}>
-        <button style={styles.button}>Войти</button>
+        {isAuth ? (
+          <>
+            <button style={styles.button} onClick={() => navigate("/account")}>
+              Кабинет
+            </button>
+            <button style={styles.button} onClick={() => navigate("/favorites")}>
+              Избранное
+            </button>
+          </>
+        ) : (
+          <button style={styles.button} onClick={() => navigate("/login")}>
+            Войти
+          </button>
+        )}
       </div>
     </header>
   );
@@ -57,6 +76,7 @@ const styles = {
   logo: {
     fontWeight: "bold",
     fontSize: 24,
+    cursor: "pointer",
   },
 
   searchWrapper: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from '../components/headers/HeaderGuest';
+import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FilterPanel from '../components/FilterPanel';
 import ProductCard from '../components/ProductCard';

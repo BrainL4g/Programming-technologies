@@ -16,5 +16,23 @@ export const products = [
     title: "Пылесос Dyson V12",
     price: 39990,
     image: "https://via.placeholder.com/200"
+  },
+  {
+    id: 4,
+    title: "Ноутбук Lenovo IdeaPad",
+    price: 58990,
+    image: "https://via.placeholder.com/200"
+  },
+  {
+    id: 5,
+    title: "Ноутбук Lenovo IdeaPad",
+    price: 58990,
+    image: "https://via.placeholder.com/200"
+  },
+  {
+    id: 6,
+    title: "Ноутбук Lenovo IdeaPad",
+    price: 58990,
+    image: "https://via.placeholder.com/200"
   }
 ];

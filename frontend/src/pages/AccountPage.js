@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Header from '../components/headers/HeaderAuth';
+import Header from '../components/Header';
 import Footer from '../components/Footer';
 import EditPersonalDataForm from '../components/account/EditPersonalDataForm';
 import ChangePasswordForm from '../components/account/ChangePasswordForm';
@@ -11,7 +11,7 @@ function AccountPage() {
 
   return (
     <>
-      <Header isAuth={true} />
+      <Header /> {/* ← Больше не передаём isAuth={true} */}
 
       <main style={styles.page}>
         <div style={styles.box}>

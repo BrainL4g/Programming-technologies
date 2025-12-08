@@ -1,7 +1,18 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function LogoutModal({ open, onClose }) {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   if (!open) return null;
+
+  const handleLogout = () => {
+    logout();
+    onClose();
+    navigate('/login');
+  };
 
   return (
     <div style={styles.overlay}>
@@ -10,7 +21,7 @@ function LogoutModal({ open, onClose }) {
 
         <div style={styles.row}>
           <button style={styles.cancel} onClick={onClose}>Отмена</button>
-          <button style={styles.logout}>Выйти</button>
+          <button style={styles.logout} onClick={handleLogout}>Выйти</button>
         </div>
       </div>
     </div>

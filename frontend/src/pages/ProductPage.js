@@ -167,9 +167,6 @@ export default function ProductPage() {
               </div>
 
               <div style={styles.priceActions}>
-                <button style={styles.compareButton}>
-                  Сравнить цены ({sortedPrices.length})
-                </button>
                 <button style={styles.favoriteButton}>
                   ★ В избранное
                 </button>
@@ -240,7 +237,7 @@ export default function ProductPage() {
 
               {activeTab === 'reviews' && (
                 <div style={styles.reviewsContent}>
-                  <h3 style={styles.contentTitle}>Отзывы покупателей</h3>
+                  <h3 style={styles.contentTitle}>Выжимка из отзовов</h3>
                   <div style={styles.reviewStats}>
                     <div style={styles.ratingSummary}>
                       <div style={styles.ratingNumber}>{productDetails.rating}</div>
@@ -251,24 +248,7 @@ export default function ProductPage() {
                       <div style={styles.ratingCount}>{productDetails.reviews} отзывов</div>
                     </div>
                   </div>
-                  <div style={styles.reviewsList}>
-                    <div style={styles.reviewItem}>
-                      <div style={styles.reviewHeader}>
-                        <span style={styles.reviewAuthor}>Александр</span>
-                        <span style={styles.reviewDate}>15.03.2023</span>
-                      </div>
-                      <div style={styles.reviewRating}>★★★★★</div>
-                      <p style={styles.reviewText}>Отличный телефон за свои деньги. Батарея держит долго, камера хорошая.</p>
-                    </div>
-                    <div style={styles.reviewItem}>
-                      <div style={styles.reviewHeader}>
-                        <span style={styles.reviewAuthor}>Мария</span>
-                        <span style={styles.reviewDate}>10.03.2023</span>
-                      </div>
-                      <div style={styles.reviewRating}>★★★★☆</div>
-                      <p style={styles.reviewText}>Хороший телефон, но тяжеловат. В остальном всё устраивает.</p>
-                    </div>
-                  </div>
+
                 </div>
               )}
             </div>

@@ -100,7 +100,19 @@ function PriceChart({ productId, productName = "Товар" }) {
         <h3 style={styles.title}>История цен: {productName}</h3>
 
         <div style={styles.controls}>
+          {viewMode === 'single' && (
+            <select
+              value={selectedShop}
+              onChange={(e) => setSelectedShop(e.target.value)}
+              style={styles.select}
+            >
+              {shops.map(shop => (
+                <option key={shop} value={shop}>{shop}</option>
+              ))}
+            </select>
+          )}
           <div style={styles.viewToggle}>
+
             <button
               style={viewMode === 'single' ? styles.activeButton : styles.button}
               onClick={() => setViewMode('single')}
@@ -115,17 +127,7 @@ function PriceChart({ productId, productName = "Товар" }) {
             </button>
           </div>
 
-          {viewMode === 'single' && (
-            <select
-              value={selectedShop}
-              onChange={(e) => setSelectedShop(e.target.value)}
-              style={styles.select}
-            >
-              {shops.map(shop => (
-                <option key={shop} value={shop}>{shop}</option>
-              ))}
-            </select>
-          )}
+
         </div>
       </div>
 

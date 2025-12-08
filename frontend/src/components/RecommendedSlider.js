@@ -1,31 +1,83 @@
-import React from 'react';
-import { recommended } from '../mocks/recommended';
-import ProductCard from './ProductCard';
+import React, { useState } from "react";
+import ProductCard from "./ProductCard";
 
-function RecommendedSlider() {
+export default function RecommendedSlider({ products }) {
+  const [index, setIndex] = useState(0);
+
+  const visibleCount = 3;
+  const maxIndex = products.length - visibleCount;
+
+  const next = () => {
+    setIndex((prev) => Math.min(prev + 1, maxIndex));
+  };
+
+  const prev = () => {
+    setIndex((prev) => Math.max(prev - 1, 0));
+  };
+
+  const visibleProducts = products.slice(index, index + visibleCount);
+
   return (
-    <div style={styles.slider}>
-      <h3 style={{ marginBottom: 10 }}>Мы рекомендуем</h3>
-      <div style={styles.row}>
-        {recommended.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+    <div style={styles.wrap}>
+      <h2 style={styles.title}>Мы рекомендуем</h2>
+
+      <div style={styles.slider}>
+        <button style={styles.arrowLeft} onClick={prev} disabled={index === 0}>
+          ‹
+        </button>
+
+        <div style={styles.cards}>
+          {visibleProducts.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+
+        <button
+          style={styles.arrowRight}
+          onClick={next}
+          disabled={index >= maxIndex}
+        >
+          ›
+        </button>
       </div>
     </div>
   );
 }
 
 const styles = {
-  slider: {
+  wrap: {
     background: "#fff",
     padding: 20,
     borderRadius: 8,
-    marginBottom: 20
+    width: "100%",
   },
-  row: {
+  title: {
+    marginBottom: 15,
+    fontSize: 24,
+  },
+  slider: {
+    position: "relative",
     display: "flex",
-    overflowX: "auto"
-  }
+    alignItems: "center",
+  },
+  cards: {
+    display: "flex",
+    gap: 20,
+    width: "100%",
+    overflow: "hidden",
+  },
+  arrowLeft: {
+    fontSize: 30,
+    padding: "0 10px",
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+  },
+  arrowRight: {
+    fontSize: 30,
+    padding: "0 10px",
+    cursor: "pointer",
+    background: "none",
+    border: "none",
+  },
 };
-
-export default RecommendedSlider;

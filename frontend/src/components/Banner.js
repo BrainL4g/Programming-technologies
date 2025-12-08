@@ -1,22 +1,48 @@
-import React from 'react';
+import React from "react";
+import banner from "../images/banner.png";
 
-function Banner() {
+export default function Banner() {
   return (
     <div style={styles.banner}>
-      <h2>Наш логотип</h2>
-      <p>Лучший агрегатор техники!</p>
+      <img src={banner} style={styles.image} alt="banner" />
+
+      <div style={styles.textBlock}>
+        <h1 style={styles.title}>BRO</h1>
+        <p style={styles.text}>
+          Мы не продаём технику, мы помогаем найти идеальный вариант по лучшей цене.
+          Сравнивайте предложения, читайте отзывы и выбирайте уверенно. Экономия времени и денег начниается здесь.
+        </p>
+      </div>
     </div>
   );
 }
 
 const styles = {
   banner: {
-    background: "#1976d2",
+    position: "relative",
+    width: "100%",
+    height: 250,
+    overflow: "hidden"
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover"
+  },
+  textBlock: {
+    position: "absolute",
+    top: "20%",
+    left: "10%",
     color: "#fff",
-    textAlign: "center",
-    padding: "40px 0",
-    marginBottom: 20
+    maxWidth: 500
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: "bold",
+    marginBottom: 10
+  },
+  text: {
+    fontSize: 16,
+    lineHeight: 1.4
   }
 };
-
-export default Banner;

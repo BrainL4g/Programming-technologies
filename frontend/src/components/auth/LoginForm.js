@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function LoginForm({ onSwitchToRegister }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [rememberMe, setRememberMe] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,8 +25,16 @@ function LoginForm({ onSwitchToRegister }) {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log('Вход:', { email, password, rememberMe });
+      // console.log('Вход:', { email, password, rememberMe });
       // Здесь будет логика авторизации
+
+      const result = login({ email, password });
+
+      if (!result.success) {
+        setErrors({ password: result.message });
+      } else {
+        navigate("/"); // успешный вход → на главную
+      }
     }
   };
 
@@ -51,6 +64,20 @@ function LoginForm({ onSwitchToRegister }) {
           />
           {errors.password && <p style={styles.error}>{errors.password}</p>}
         </div>
+        <button
+          type="button"
+          onClick={() => navigate("/forgot")}
+          style={{ 
+            background: "none",
+            border: "none",
+            color: "#05386B",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 15
+          }}
+        >
+          Забыли пароль?
+        </button>
 
         <div style={styles.rememberGroup}>
           <input

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 
 const categories = [
   "Смартфоны",
@@ -9,12 +10,35 @@ const categories = [
   "Фототехника"
 ];
 
+// Маппинг: название → ключ категории в URL
+const categoryMap = {
+  "Смартфоны": "smartphones",
+  "Ноутбуки": "laptops",
+  "Комплектующие": "components",
+  "Красота и здоровье": "beauty",
+  "Инструменты": "tools",
+  "Фототехника": "photo"
+};
+
 function Categories() {
+  const navigate = useNavigate();
+
+  const handleClick = (c) => {
+    const key = categoryMap[c];
+    navigate(`/search?category=${key}`);
+  };
+
   return (
     <div style={styles.box}>
       <h3>Категории</h3>
       {categories.map((c) => (
-        <div key={c} style={styles.item}>{c}</div>
+        <div
+          key={c}
+          style={styles.item}
+          onClick={() => handleClick(c)}
+        >
+          {c}
+        </div>
       ))}
     </div>
   );

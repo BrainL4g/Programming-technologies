@@ -45,10 +45,10 @@ export default function ProductPage() {
       { name: "Цвет", value: "Черный" },
     ],
     images: [
-      "https://via.placeholder.com/400x400/05386B/ffffff?text=Фото+1",
-      "https://via.placeholder.com/400x400/05386B/ffffff?text=Фото+2",
-      "https://via.placeholder.com/400x400/05386B/ffffff?text=Фото+3",
-      "https://via.placeholder.com/400x400/05386B/ffffff?text=Фото+4",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
     ],
     prices: [
       { shop: "DNS", price: 29990, delivery: "Бесплатно", inStock: true },

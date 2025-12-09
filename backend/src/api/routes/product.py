@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.dependecies.database import get_db_session
 from src.api.dependecies.user import get_current_active_superuser
@@ -22,11 +22,25 @@ async def create_product(
 
 @router.get("/", response_model=List[ProductResponse])
 async def get_products(
-        skip: int = 0,
-        limit: int = 10,
-        db: AsyncSession = Depends(get_db_session),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    category_id: Optional[int] = Query(None),
+    brand: Optional[str] = Query(None),
+    specifications: Optional[str] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    sort_order: Optional[str] = Query("asc", regex="^(asc|desc)$"),
+    db: AsyncSession = Depends(get_db_session),
 ):
-    return await ProductService.get_products(db, skip, limit)
+        return await ProductService.get_products_with_filters(
+            db=db,
+            skip=skip,
+            limit=limit,
+            category_id=category_id,
+            brand=brand,
+            specifications=specifications,
+            sort_by=sort_by,
+            sort_order=sort_order
+        )
 
 
 @router.get("/{product_id}", response_model=ProductResponse)

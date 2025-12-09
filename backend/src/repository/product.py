@@ -1,10 +1,11 @@
 from datetime import datetime
+import json
 from typing import Dict, List, Any, Coroutine, Optional, Sequence
 from uuid import UUID
 
 import sqlalchemy
 from sqlalchemy.orm import aliased
-from sqlalchemy import Date, Tuple, and_, cast, func, select, Row, RowMapping
+from sqlalchemy import Date, Tuple, and_, cast, func, select, Row, RowMapping, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -37,6 +38,113 @@ class ProductCRUDRepository:
             selectinload(Product.offers),
             selectinload(Product.images),
         ))
+        return query.scalars().all()
+    
+    async def get_products_with_filters(
+        self, 
+        db: AsyncSession, 
+        skip: int = 0, 
+        limit: int = 10,
+        category_id: Optional[int] = None,
+        brand: Optional[str] = None,
+        specifications: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = "asc"
+    ) -> Sequence[Product]:
+        """Получить продукты с фильтрацией и сортировкой"""
+        
+        stmt = select(Product)
+        
+        # Применяем фильтры
+        filters = []
+        
+        if category_id is not None:
+            filters.append(Product.category_id == category_id)
+        
+        if brand is not None:
+            filters.append(Product.brand == brand)
+        
+        if specifications is not None:
+            try:
+                specs_dict = json.loads(specifications)
+                for key, value in specs_dict.items():
+                    # Фильтрация по JSON полю
+                    filter_condition = text(
+                        f"product.specifications->>'{key}' = :{key}_value"
+                    )
+                    
+                    filters.append(filter_condition)
+            except json.JSONDecodeError:
+                # Если JSON некорректный, игнорируем фильтр по спецификациям
+                pass
+        
+        # Добавляем все фильтры в запрос
+        if filters:
+            stmt = stmt.where(and_(*filters))
+        
+        # Применяем сортировку
+        if sort_by:
+            if sort_by == "price":
+                # Подзапрос для минимальной цены
+                from sqlalchemy import literal_column
+                min_price_subq = (
+                    select(func.min(Offer.price))
+                    .where(
+                        Offer.product_id == Product.id,
+                        Offer.available == True
+                    )
+                    .scalar_subquery()
+                )
+                
+                if sort_order.lower() == "desc":
+                    stmt = stmt.order_by(min_price_subq.desc())
+                else:
+                    stmt = stmt.order_by(min_price_subq.asc())
+                    
+            elif sort_by == "name":
+                if sort_order.lower() == "desc":
+                    stmt = stmt.order_by(Product.name.desc())
+                else:
+                    stmt = stmt.order_by(Product.name.asc())
+            elif sort_by == "id":
+                if sort_order.lower() == "desc":
+                    stmt = stmt.order_by(Product.id.desc())
+                else:
+                    stmt = stmt.order_by(Product.id.asc())
+            elif sort_by == "brand":
+                if sort_order.lower() == "desc":
+                    stmt = stmt.order_by(Product.brand.desc())
+                else:
+                    stmt = stmt.order_by(Product.brand.asc())
+            elif sort_by == "category_id":
+                if sort_order.lower() == "desc":
+                    stmt = stmt.order_by(Product.category_id.desc())
+                else:
+                    stmt = stmt.order_by(Product.category_id.asc())
+            
+        else:
+            # Сортировка по умолчанию
+            stmt = stmt.order_by(Product.id)
+        
+        # Пагинация
+        stmt = stmt.offset(skip).limit(limit)
+        
+        # Загрузка отношений
+        stmt = stmt.options(
+            selectinload(Product.category),
+            selectinload(Product.offers),
+            selectinload(Product.images),
+        )
+        
+        # Если есть фильтры по спецификациям, передаем параметры
+        if specifications and 'specs_dict' in locals():
+            query = await db.execute(
+                stmt,
+                {f"{key}_value": str(value) for key, value in specs_dict.items()}
+            )
+        else:
+            query = await db.execute(stmt)
+            
         return query.scalars().all()
 
     async def update_product(self, product: Product, update_data: dict, db: AsyncSession) -> Product:

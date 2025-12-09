@@ -18,6 +18,31 @@ class ProductService:
 
     async def get_products(self, db: AsyncSession, skip: int, limit: int) -> List[Product]:
         return await ProductCrud.get_products(db, skip, limit)
+    
+    async def get_products_with_filters(
+        self,
+        db: AsyncSession,
+        skip: int = 0,
+        limit: int = 10,
+        category_id: Optional[int] = None,
+        brand: Optional[str] = None,
+        specifications: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        sort_order: Optional[str] = "asc"
+    ) -> List[Product]:
+        products = await ProductCrud.get_products_with_filters(
+            db, skip, limit, category_id, brand, specifications, sort_by, sort_order
+        )
+        
+        # Рассчитываем min_price и max_price для каждого продукта
+        for product in products:
+            if product.offers:
+                prices = [offer.price for offer in product.offers if offer.available]
+                if prices:
+                    product.min_price = min(prices)
+                    product.max_price = max(prices)
+        
+        return list(products)
 
     async def update_product(
             self, db: AsyncSession, product: Product, update_data: ProductUpdate

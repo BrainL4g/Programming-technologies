@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import { mockUser } from '../mocks/mockUser'; // <-- Подключаем твои данные
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../api/authService';
 
 const AuthContext = createContext();
 
@@ -10,21 +10,47 @@ export const AuthProvider = ({ children }) => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [confirmCode, setConfirmCode] = useState('');
 
-  const login = ({ email, password }) => {
-    // теперь сверяем с твоим mockUser
-    if (email === mockUser.email && password === mockUser.password) {
-      setUser({ name: mockUser.name, email: mockUser.email });
+  useEffect(() => {
+    const initAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          // Опционально: можно запросить свежие данные пользователя с бэкенда
+          const userData = await authService.getCurrentUser();
+          setUser(userData);
+          setIsAuth(true);
+        } catch (err) {
+          console.error("Session restoration failed", err);
+          logout(); // Если токен протух
+        }
+      }
+    };
+    initAuth();
+  }, []);
+
+  const login = async ({ email, password }) => {
+    try {
+      await authService.login(email, password);
       setIsAuth(true);
       return { success: true };
+    } catch (err) {
+      return { success: false, message: "Неверная почта или пароль" };
     }
+    };
 
-    return { success: false, message: "Неверная почта или пароль" };
-  };
-
-  const register = ({ name, email, password }) => {
-    setUser({ name, email });
-    setIsAuth(true);
-    return { success: true };
+  const register = async ({ name, email, password }) => {
+    try {
+      await authService.register(
+        email,
+        password,
+        password, 
+        name
+      );
+      await authService.login(email, password);
+      setUser({ username: name, email: email });
+      return { success: true };
+    } catch (err) {
+      return { success: false, message: "Неверная почта или пароль" };
+    }
   };
 
   const logout = () => {
@@ -38,6 +64,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isAuth,
         login,
         register,

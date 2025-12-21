@@ -9,10 +9,10 @@ function RegisterForm({ onSwitchToLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
 
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let newErrors = {};
@@ -33,10 +33,12 @@ function RegisterForm({ onSwitchToLogin }) {
 
     if (Object.keys(newErrors).length === 0) {
       console.log('Регистрация:', { name, email, password });
-      // Здесь будет логика регистрации
-
-      const result = register(name, email, password);
-      if (result.success) navigate("/");
+      
+      const result = await register({name, email, password});
+      if (result.success) {
+        await login({ email, password });
+        navigate("/");
+      }
     }
   };
 

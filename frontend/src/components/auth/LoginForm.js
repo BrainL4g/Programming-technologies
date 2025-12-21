@@ -11,7 +11,7 @@ function LoginForm({ onSwitchToRegister }) {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     let newErrors = {};
@@ -20,16 +20,12 @@ function LoginForm({ onSwitchToRegister }) {
     else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Некорректный email';
 
     if (!password) newErrors.password = 'Введите пароль';
-    else if (password.length < 6) newErrors.password = 'Пароль должен быть не менее 6 символов';
+    else if (password.length < 5) newErrors.password = 'Пароль должен быть не менее 5 символов';
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // console.log('Вход:', { email, password, rememberMe });
-      // Здесь будет логика авторизации
-
-      const result = login({ email, password });
-
+      const result = await login({ email, password });
       if (!result.success) {
         setErrors({ password: result.message });
       } else {

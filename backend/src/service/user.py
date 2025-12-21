@@ -35,7 +35,7 @@ class UserService:
     async def update_password(
             self, db: AsyncSession, user: User, update_data: UserUpdatePassword
     ) -> User:
-        if not verify_password(update_data.password, user.hashed_password):
+        if not verify_password(update_data.password, user.password):
             raise InsufficientPrivileges()
         return await UserCrud.update_user_password(
             user, password=update_data.new_password, db=db

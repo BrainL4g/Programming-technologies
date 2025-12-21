@@ -10,6 +10,54 @@ from src.db.models import (
     User, Category, Product, Favorite,
     Store, Offer, PriceHistory, Attachment
 )
+import random
+from decimal import Decimal
+from datetime import datetime, timedelta
+
+async def generate_fake_history(session, offer, days=30):
+    """
+    Генерирует историю цен для оффера без ошибок типов данных.
+    """
+    history_entries = []
+    
+    # Приводим к Decimal для совместимости с Numeric(12, 2)
+    base_price = Decimal(str(offer.price))
+    current_price = base_price + Decimal(random.randint(2000, 8000))
+    
+    # Идем от прошлого к настоящему
+    start_date = datetime.utcnow() - timedelta(days=days)
+
+    for i in range(days):
+        # Вероятность изменения цены 25%
+        if random.random() < 0.25:
+            # Генерация волатильности: изменение на -2%...1.5%
+            change_percent = random.uniform(-0.02, 0.015)
+            current_price = current_price * Decimal(str(1 + change_percent))
+            
+            # Ограничитель: цена не может упасть ниже 70% от текущей
+            min_allowed = base_price * Decimal('0.7')
+            if current_price < min_allowed:
+                current_price = min_allowed
+
+        # Создаем запись
+        date_for_entry = start_date + timedelta(days=i)
+        
+        history_item = PriceHistory(
+            offer_id=offer.id,
+            price=round(current_price, 2),
+            recorded_at=date_for_entry
+        )
+        history_entries.append(history_item)
+
+    # Добавляем финальную актуальную точку
+    history_entries.append(PriceHistory(
+        offer_id=offer.id,
+        price=base_price,
+        recorded_at=datetime.utcnow()
+    ))
+    
+    session.add_all(history_entries)
+    await session.commit()
 
 async def insert_test_data(session: AsyncSession):
     user1 = User(
@@ -30,30 +78,19 @@ async def insert_test_data(session: AsyncSession):
     await session.refresh(user1)
     await session.refresh(user2)
 
-    electronics = Category(name="Электроника", description="Электронные устройства")
-    computers = Category(name="Компьютеры", description="Компьютеры и комплектующие")
-    smartphones = Category(name="Смартфоны", description="Мобильные телефоны")
+    electronics = Category(name="Электроника", description="desc")
+    c2 = Category(name="Инструменты", description="desc")
+    c3 = Category(name="Комплектующие", description="desc")
+    c4 = Category(name="Красота и здоровье", description="desc")
+    c5 = Category(name="Фототехника", description="desc")
+    smartphones = Category(name="Смартфоны", description="desc")
+    laptops = Category( name="Ноутбуки", description="desc")
 
-    laptops = Category(
-        name="Ноутбуки",
-        description="Портативные компьютеры",
-        parent_id=None
-    )
-
-    tablets = Category(
-        name="Планшеты",
-        description="Планшетные компьютеры",
-        parent_id=None
-    )
-
-    session.add_all([electronics, computers, smartphones, laptops, tablets])
+    session.add_all([electronics, c2, c3, c4, c5, smartphones, laptops])
     await session.commit()
 
-    for cat in [electronics, computers, smartphones, laptops, tablets]:
+    for cat in [electronics, c2, c3, c4, c5, smartphones, laptops]:
         await session.refresh(cat)
-
-    laptops.parent_id = computers.id
-    tablets.parent_id = electronics.id
     await session.commit()
 
     product1 = Product(
@@ -102,36 +139,36 @@ async def insert_test_data(session: AsyncSession):
         await session.refresh(prod)
 
     attachment1 = Attachment(
-        file_url="https://example.com/images/macbook1.jpg",
+        file_url="src/../static/products/1.jpg",
         product_id=product1.id
     )
 
     attachment2 = Attachment(
-        file_url="https://example.com/images/macbook2.jpg",
+        file_url="src/../static/products/2.webp",
         product_id=product1.id
     )
 
     attachment3 = Attachment(
-        file_url="https://example.com/images/iphone1.jpg",
+        file_url="src/../static/products/3.webp",
         product_id=product2.id
     )
 
-    attachment4 = Attachment(
-        file_url="https://example.com/icons/electronics.svg",
-        category_id=electronics.id
+    attachment7 = Attachment(
+    file_url="src/../static/products/4.jpg",
+    product_id=product2.id
     )
 
-    attachment5 = Attachment(
-        file_url="https://example.com/icons/computers.svg",
-        category_id=computers.id
+    attachment8 = Attachment(
+    file_url="src/../static/products/5.jpg",
+    product_id=product3.id
     )
 
-    attachment6 = Attachment(
-        file_url="https://example.com/icons/smartphones.svg",
-        category_id=smartphones.id
+    attachment9 = Attachment(
+    file_url="src/../static/products/6.jpg",
+    product_id=product3.id
     )
 
-    session.add_all([attachment1, attachment2, attachment3, attachment4, attachment5, attachment6])
+    session.add_all([attachment1, attachment2, attachment3, attachment7, attachment8, attachment9])
     await session.commit()
 
     store1 = Store(
@@ -197,47 +234,29 @@ async def insert_test_data(session: AsyncSession):
         image_url="https://mvideo.ru/images/iphone15.jpg"
     )
 
-    session.add_all([offer1, offer2, offer3])
+    offer4 = Offer(
+        product_id=product3.id,
+        external_id="mvideo-iphone15-001",
+        store_id=store3.id,
+        price=119999.50,
+        old_price=129999.50,
+        currency="RUB",
+        available=True,
+        in_stock=20,
+        url="https://mvideo.ru/iphone-15-pro",
+        image_url="https://mvideo.ru/images/iphone15.jpg"
+    )
+
+    session.add_all([offer1, offer2, offer3, offer4])
     await session.commit()
 
-    for offer in [offer1, offer2, offer3]:
+    for offer in [offer1, offer2, offer3, offer4]:
         await session.refresh(offer)
 
-    price_history1 = PriceHistory(
-        offer_id=offer1.id,
-        price=259999.99
-    )
-
-    price_history2 = PriceHistory(
-        offer_id=offer1.id,
-        price=249999.99
-    )
-
-    price_history3 = PriceHistory(
-        offer_id=offer2.id,
-        price=249999.00
-    )
-
-    price_history4 = PriceHistory(
-        offer_id=offer2.id,
-        price=239999.00
-    )
-
-    price_history5 = PriceHistory(
-        offer_id=offer3.id,
-        price=129999.50
-    )
-
-    price_history6 = PriceHistory(
-        offer_id=offer3.id,
-        price=119999.50
-    )
-
-    session.add_all([
-        price_history1, price_history2, price_history3,
-        price_history4, price_history5, price_history6
-    ])
-    await session.commit()
+    await generate_fake_history(session, offer1, days=60)
+    await generate_fake_history(session, offer2, days=60)
+    await generate_fake_history(session, offer3, days=60)
+    await generate_fake_history(session, offer4, days=60)
 
     favorite1 = Favorite(
         user_id=user1.id,
@@ -259,6 +278,107 @@ async def insert_test_data(session: AsyncSession):
 
     session.add_all([favorite1, favorite2, favorite3])
     await session.commit()
+
+    # 1. Google Pixel 8 Pro
+    product_pixel = Product(
+        name="Google Pixel 8 Pro",
+        description="Смартфон с лучшей камерой и чистым Android",
+        brand="Google",
+        category_id=smartphones.id,
+        specifications={
+            "processor": "Google Tensor G3",
+            "ram": "12GB",
+            "storage": "128GB",
+            "camera": "50MP + 48MP + 48MP"
+        }
+    )
+
+    # 2. Xiaomi 14 Ultra
+    product_xiaomi = Product(
+        name="Xiaomi 14 Ultra",
+        description="Ультимативный флагман с оптикой Leica",
+        brand="Xiaomi",
+        category_id=smartphones.id,
+        specifications={
+            "processor": "Snapdragon 8 Gen 3",
+            "ram": "16GB",
+            "storage": "512GB",
+            "camera": "50MP (1 inch sensor)"
+        }
+    )
+
+    # 3. Samsung Galaxy Z Fold5
+    product_fold = Product(
+        name="Samsung Galaxy Z Fold5",
+        description="Складной смартфон для продуктивности",
+        brand="Samsung",
+        category_id=smartphones.id,
+        specifications={
+            "processor": "Snapdragon 8 Gen 2",
+            "ram": "12GB",
+            "storage": "256GB",
+            "Дисплей": "7.6 inch Dynamic AMOLED"
+        }
+    )
+
+    session.add_all([product_pixel, product_xiaomi, product_fold])
+    await session.commit()
+    
+    for p in [product_pixel, product_xiaomi, product_fold]:
+        await session.refresh(p)
+
+    attachments_extra = [
+        Attachment(file_url="src/../static/products/10.jpg", product_id=product_pixel.id),
+        Attachment(file_url="src/../static/products/11.jpg", product_id=product_xiaomi.id),
+        Attachment(file_url="src/../static/products/12.png", product_id=product_fold.id),
+    ]
+    session.add_all(attachments_extra)
+
+    offer_pixel = Offer(
+        product_id=product_pixel.id,
+        external_id="mvideo-pixel8-001",
+        store_id=store3.id, 
+        price=95000.00,
+        old_price=105000.00,
+        currency="RUB",
+        available=True,
+        in_stock=15,
+        url="https://mvideo.ru/google-pixel-8-pro",
+        image_url="https://mvideo.ru/images/pixel8.jpg"
+    )
+
+    offer_xiaomi = Offer(
+        product_id=product_xiaomi.id,
+        external_id="citilink-xiaomi14-001",
+        store_id=store2.id, # Ситилинк
+        price=125000.00,
+        old_price=139000.00,
+        currency="RUB",
+        available=True,
+        in_stock=3,
+        url="https://citilink.ru/xiaomi-14-ultra",
+        image_url="https://citilink.ru/images/xiaomi14.jpg"
+    )
+
+    offer_fold = Offer(
+        product_id=product_fold.id,
+        external_id="apple-fold-001", 
+        store_id=store1.id, 
+        price=155000.00,
+        old_price=170000.00,
+        currency="RUB",
+        available=True,
+        in_stock=5,
+        url="https://store.apple.com/samsung-fold-5",
+        image_url="https://store.apple.com/images/fold5.jpg"
+    )
+
+    session.add_all([offer_pixel, offer_xiaomi, offer_fold])
+    await session.commit()
+
+    for o in [offer_pixel, offer_xiaomi, offer_fold]:
+        await session.refresh(o)
+        await generate_fake_history(session, o, days=45)
 
 # async def run_select_queries(session: AsyncSession):
 #     """Выполнение SELECT запросов для тестирования"""

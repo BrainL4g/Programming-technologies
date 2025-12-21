@@ -13,12 +13,13 @@ from src.service.product import ProductService
 
 router = APIRouter(tags=["Attachments"])
 
-@router.get("/uploads/{attachment_id}", status_code=status.HTTP_200_OK, response_class=FileResponse)
+@router.get("/uploads/{attachment_id}", status_code=status.HTTP_200_OK)
 async def get_file(attachment_id: int,
                    db: AsyncSession = Depends(get_db_session)):
     file = await AttachCrud.get_by_id(db=db, attachment_id=attachment_id)
     if not file:
         raise FileNotFound()
+    print(file.file_url)
     return FileResponse(file.file_url)
 
 @router.post("/products/{product_id}/images", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED)

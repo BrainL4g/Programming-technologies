@@ -7,8 +7,8 @@ import random
 from typing import Optional
 from fastapi import UploadFile
 
-ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif"]
-UPLOAD_DIR = Path("../../static")
+ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+UPLOAD_DIR = Path("src/../static")
 
 async def save_file(file: UploadFile, current_file_url: Optional[str] = None, prefix: str = "") -> str:
     # Проверка типа файла

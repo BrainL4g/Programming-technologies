@@ -1,13 +1,45 @@
 import React from 'react';
 
-function Pagination() {
+function Pagination({ totalItems, itemsPerPage, currentPage, onPageChange }) {
+  // Вычисляем общее количество страниц
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Если страниц 0 или 1, пагинацию можно не показывать
+  if (totalPages <= 1) return null;
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <div style={styles.pagination}>
-      <button style={styles.button}>Назад</button>
-      <button style={styles.button}>1</button>
-      <button style={styles.button}>2</button>
-      <button style={styles.button}>3</button>
-      <button style={styles.button}>Вперёд</button>
+      <button 
+        style={{ ...styles.button, opacity: currentPage === 1 ? 0.5 : 1 }} 
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        Назад
+      </button>
+
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          style={{
+            ...styles.button,
+            backgroundColor: currentPage === page ? "#05386B" : "#1976d2", // Подсветка активной страницы
+            fontWeight: currentPage === page ? "bold" : "normal",
+          }}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button 
+        style={{ ...styles.button, opacity: currentPage === totalPages ? 0.5 : 1 }} 
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        Вперёд
+      </button>
     </div>
   );
 }
@@ -16,7 +48,7 @@ const styles = {
   pagination: {
     display: "flex",
     justifyContent: "center",
-    padding: 20,
+    padding: "20px 0",
     gap: 10
   },
   button: {
@@ -25,7 +57,8 @@ const styles = {
     border: "none",
     color: "#fff",
     cursor: "pointer",
-    borderRadius: 6
+    borderRadius: 6,
+    transition: "0.3s"
   }
 };
 

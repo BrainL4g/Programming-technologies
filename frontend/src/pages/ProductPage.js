@@ -1,69 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import PriceChart from "../components/PriceChart";
-import { products } from "../mocks/products";
-import { recommended } from "../mocks/recommended";
+import apiClient from "../api/apiClient";
+import { useFavorites } from "../context/FavoriteContext";
+
+const BASE_URL = "http://127.0.0.1:8000";
 
 export default function ProductPage() {
   const { id } = useParams();
-  const all = [...products, ...recommended];
-  const product = all.find(p => p.id === Number(id));
+  const { toggleFavorite, isFavorite } = useFavorites(); 
+  const [product, setProduct] = useState(null);
+  const [priceHistory, setPriceHistory] = useState(null);
+  const [stores, setStores] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const isInFavorite = product ? isFavorite(product.id) : false;
 
-  if (!product) {
-    return (
-      <>
-        <Header />
-        <div style={{ padding: 20 }}>
-          <h2>Товар не найден</h2>
-        </div>
-        <Footer />
-      </>
-    );
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        setLoading(true);
+        
+        // 1. Загружаем основные данные товара
+        const productData = await apiClient.get(`/products/${id}`);
+        setProduct(productData);
+
+        // 2. Загружаем историю цен
+        const historyData = await apiClient.get(`/products/${id}/prices`);
+        setPriceHistory(historyData);
+
+        // 3. Загружаем данные о магазинах для всех предложений
+        if (productData.offers && productData.offers.length > 0) {
+          const storeIds = [...new Set(productData.offers.map(o => o.store_id))];
+          
+          // Делаем запросы ко всем уникальным магазинам одновременно
+          const storeRequests = storeIds.map(storeId => 
+            apiClient.get(`/stores/${storeId}`).catch(() => ({ id: storeId, name: "Неизвестный магазин" }))
+          );
+          
+          const storesData = await Promise.all(storeRequests);
+          
+          // Создаем карту для быстрого поиска: { "uuid": "Название" }
+          const storesMap = {};
+          storesData.forEach(s => {
+            storesMap[s.id] = s.name;
+          });
+          setStores(storesMap);
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllData();
+    console.log(stores.dictionary);
+
+  }, [id]);
+
+  if (loading || !product) {
+    return <div style={{ textAlign: 'center', padding: '100px' }}>Загрузка...</div>;
   }
 
-  // Расширенные данные товара
-  const productDetails = {
-    ...product,
-    description: "Смартфон Samsung Galaxy A54 5G — это смартфон, который сочетает в себе стильный дизайн, мощные характеристики и доступную цену. Смартфон оснащен 6.4-дюймовым Super AMOLED экраном с частотой обновления 120 Гц, что обеспечивает плавную анимацию и комфортный просмотр контента. Основная тройная камера 50 Мп позволяет делать качественные фото и видео в любых условиях.",
-    specifications: [
-      { name: "Экран", value: "6.4\", Super AMOLED, 120 Гц" },
-      { name: "Процессор", value: "Exynos 1380" },
-      { name: "Оперативная память", value: "8 ГБ" },
-      { name: "Встроенная память", value: "256 ГБ" },
-      { name: "Основная камера", value: "50 Мп + 12 Мп + 5 Мп" },
-      { name: "Фронтальная камера", value: "32 Мп" },
-      { name: "Аккумулятор", value: "5000 мАч" },
-      { name: "Зарядка", value: "25 Вт" },
-      { name: "ОС", value: "Android 13 с One UI 5.1" },
-      { name: "Защита", value: "IP67" },
-      { name: "Вес", value: "202 г" },
-      { name: "Цвет", value: "Черный" },
-    ],
-    images: [
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Telefon_BW_2012-02-18_13-44-32.JPG/250px-Telefon_BW_2012-02-18_13-44-32.JPG",
-    ],
-    prices: [
-      { shop: "DNS", price: 29990, delivery: "Бесплатно", inStock: true },
-      { shop: "М.Видео", price: 30500, delivery: "Бесплатно", inStock: true },
-      { shop: "Эльдорадо", price: 29500, delivery: "Бесплатно", inStock: true },
-      { shop: "Ситилинк", price: 30200, delivery: "+ 250 ₽", inStock: true },
-      { shop: "OZON", price: 29800, delivery: "Бесплатно", inStock: false },
-    ],
-    rating: 4.5,
-    reviews: 128
-  };
+  const sortedOffers = product.offers ? [...product.offers].sort((a, b) => a.price - b.price) : [];
+  const lowestOffer = sortedOffers.find(o => o.available);
 
-  // Сортировка цен по возрастанию
-  const sortedPrices = [...productDetails.prices].sort((a, b) => a.price - b.price);
-  const lowestPrice = sortedPrices.find(p => p.inStock);
+  const specsArray = product.specifications 
+    ? Object.entries(product.specifications).map(([key, value]) => ({
+        name: key.charAt(0).toUpperCase() + key.slice(1), 
+        value: value.toString()
+      }))
+    : [];
 
   return (
     <>
@@ -71,110 +82,113 @@ export default function ProductPage() {
 
       <main style={styles.main}>
         <div style={styles.container}>
-          {/* Хлебные крошки */}
           <div style={styles.breadcrumbs}>
             <span style={styles.breadcrumb}>Главная</span>
             <span style={styles.separator}>›</span>
-            <span style={styles.breadcrumb}>Смартфоны</span>
+            <span style={styles.breadcrumb}>{product.category?.name || "Каталог"}</span>
             <span style={styles.separator}>›</span>
-            <span style={styles.breadcrumbActive}>{product.title}</span>
+            <span style={styles.breadcrumbActive}>{product.name}</span>
           </div>
 
-          {/* Верхний блок с фото и ценами */}
           <div style={styles.topSection}>
-            {/* Левая колонка: Фото товара */}
             <div style={styles.photoSection}>
               <div style={styles.mainImage}>
-                <img
-                  src={productDetails.images[selectedImage]}
-                  alt={product.title}
-                  style={styles.mainImageImg}
-                />
+                {product.images?.length > 0 ? (
+                  <img
+                    src={`${BASE_URL}/uploads/${product.images[selectedImage].id}`}
+                    alt={product.name}
+                    style={styles.mainImageImg}
+                  />
+                ) : (
+                  <div style={{ padding: '50px' }}>Нет фото</div>
+                )}
               </div>
 
               <div style={styles.thumbnails}>
-                {productDetails.images.map((image, index) => (
+                {product.images?.map((imgObj, index) => (
                   <div
-                    key={index}
+                    key={imgObj.id}
                     style={{
                       ...styles.thumbnail,
                       border: selectedImage === index ? '2px solid #05386B' : '1px solid #ddd',
                     }}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <img src={image} alt={`Вид ${index + 1}`} style={styles.thumbnailImg} />
+                    <img 
+                      src={`${BASE_URL}/uploads/${imgObj.id}`} 
+                      alt={`Вид ${index + 1}`} 
+                      style={styles.thumbnailImg} 
+                    />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Правая колонка: Цены в магазинах */}
             <div style={styles.priceSection}>
-              <h1 style={styles.title}>{product.title}</h1>
+              <h1 style={styles.title}>{product.name}</h1>
 
               <div style={styles.rating}>
-                <div style={styles.stars}>
-                  {'★'.repeat(Math.floor(productDetails.rating))}
-                  {'☆'.repeat(5 - Math.floor(productDetails.rating))}
-                </div>
-                <span style={styles.ratingText}>{productDetails.rating} ({productDetails.reviews} отзывов)</span>
+                <div style={styles.stars}>★★★★☆</div>
+                <span style={styles.ratingText}>4.0</span>
               </div>
 
               <div style={styles.priceHeader}>
-                <h3 style={styles.priceTitle}>Цены в магазинах</h3>
-                {lowestPrice && (
+                <h3 style={styles.priceTitle}>Предложения магазинов</h3>
+                {lowestOffer && (
                   <div style={styles.lowestPrice}>
-                    От <span style={styles.lowestPriceValue}>{lowestPrice.price.toLocaleString('ru-RU')} ₽</span>
+                    От <span style={styles.lowestPriceValue}>{Math.round(lowestOffer.price).toLocaleString('ru-RU')} ₽</span>
                   </div>
                 )}
               </div>
 
               <div style={styles.priceList}>
-                {sortedPrices.map((priceInfo, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      ...styles.priceItem,
-                      background: priceInfo.shop === lowestPrice?.shop ? '#f0f7ff' : 'white',
-                      border: priceInfo.shop === lowestPrice?.shop ? '2px solid #05386B' : '1px solid #eee',
-                    }}
-                  >
-                    <div style={styles.priceRow}>
-                      <div style={styles.shopInfo}>
-                        <div style={styles.shopName}>{priceInfo.shop}</div>
-                        <div style={styles.delivery}>
-                          {priceInfo.delivery}
-                          {!priceInfo.inStock && <span style={styles.outOfStock}> — Нет в наличии</span>}
-                        </div>
+              {sortedOffers.map((offer) => (
+                <div
+                  key={offer.id}
+                  style={{
+                    ...styles.priceItem,
+                    background: 'white', // Убрали выделение цветом
+                    border: '1px solid #eee', // Убрали синюю обводку
+                  }}
+                >
+                  <div style={styles.priceRow}>
+                    <div style={styles.shopInfo}>
+                      <div style={styles.shopName}>
+                        {stores[offer.store_id] || "Загрузка магазина..."}
                       </div>
-                      <div style={styles.priceInfo}>
-                        <div style={styles.priceValue}>
-                          {priceInfo.price.toLocaleString('ru-RU')} ₽
-                        </div>
-                        {priceInfo.inStock ? (
-                          <button style={styles.buyButton}>
-                            Купить
-                          </button>
-                        ) : (
-                          <button style={styles.notifyButton}>
-                            Уведомить
-                          </button>
-                        )}
+                      <div style={styles.delivery}>
+                        {offer.available ? "В наличии" : "Под заказ"}
                       </div>
                     </div>
+                    <div style={styles.priceInfo}>
+                      <div style={styles.priceValue}>
+                        {Math.round(offer.price).toLocaleString('ru-RU')} ₽
+                      </div>
+                      <a href={offer.url} target="_blank" rel="noopener noreferrer">
+                        <button style={styles.buyButton}>Перейти</button>
+                      </a>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+            </div>
 
               <div style={styles.priceActions}>
-                <button style={styles.favoriteButton}>
-                  ★ В избранное
+                <button 
+                  style={{
+                    ...styles.favoriteButton,
+                    background: isInFavorite ? '#ffdada' : '#fff3cd', // Меняем цвет если в избранном
+                    color: isInFavorite ? '#d32f2f' : '#856404',
+                    borderColor: isInFavorite ? '#ffccd2' : '#ffeaa7'
+                  }}
+                  onClick={() => toggleFavorite(product)}
+                >
+                  {isInFavorite ? 'В избранном' : 'В избранное'}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Нижний блок: Описание и характеристики */}
           <div style={styles.bottomSection}>
             <div style={styles.tabs}>
               <button
@@ -189,29 +203,16 @@ export default function ProductPage() {
               >
                 Характеристики
               </button>
-              <button
-                style={activeTab === 'reviews' ? styles.tabActive : styles.tab}
-                onClick={() => setActiveTab('reviews')}
-              >
-                Отзывы ({productDetails.reviews})
-              </button>
             </div>
 
             <div style={styles.tabContent}>
               {activeTab === 'description' && (
                 <div style={styles.descriptionContent}>
                   <h3 style={styles.contentTitle}>Описание товара</h3>
-                  <p style={styles.descriptionText}>{productDetails.description}</p>
-
-                  <h4 style={styles.subtitle}>Ключевые особенности:</h4>
-                  <ul style={styles.featureList}>
-                    <li style={styles.featureItem}>Поддержка 5G для быстрого интернета</li>
-                    <li style={styles.featureItem}>Стереодинамики с качественным звуком</li>
-                    <li style={styles.featureItem}>NFC для бесконтактной оплаты</li>
-                    <li style={styles.featureItem}>Сканер отпечатков пальцев в экране</li>
-                    <li style={styles.featureItem}>Защита от воды и пыли IP67</li>
-                    <li style={styles.featureItem}>Поддержка быстрой зарядки 25 Вт</li>
-                  </ul>
+                  <p style={styles.descriptionText}>{product.description}</p>
+                  
+                  <h4 style={styles.subtitle}>Бренд: {product.brand}</h4>
+                  <p style={styles.descriptionText}>Категория: {product.category?.name}</p>
                 </div>
               )}
 
@@ -219,7 +220,7 @@ export default function ProductPage() {
                 <div style={styles.specsContent}>
                   <h3 style={styles.contentTitle}>Технические характеристики</h3>
                   <div style={styles.specsTable}>
-                    {productDetails.specifications.map((spec, index) => (
+                    {specsArray.map((spec, index) => (
                       <div
                         key={index}
                         style={{
@@ -234,30 +235,23 @@ export default function ProductPage() {
                   </div>
                 </div>
               )}
-
-              {activeTab === 'reviews' && (
-                <div style={styles.reviewsContent}>
-                  <h3 style={styles.contentTitle}>Выжимка из отзовов</h3>
-                  <div style={styles.reviewStats}>
-                    <div style={styles.ratingSummary}>
-                      <div style={styles.ratingNumber}>{productDetails.rating}</div>
-                      <div style={styles.ratingStars}>
-                        {'★'.repeat(Math.floor(productDetails.rating))}
-                        {'☆'.repeat(5 - Math.floor(productDetails.rating))}
-                      </div>
-                      <div style={styles.ratingCount}>{productDetails.reviews} отзывов</div>
-                    </div>
-                  </div>
-
-                </div>
-              )}
             </div>
           </div>
 
-          {/* График изменения цен */}
-          <div style={styles.chartSection}>
-            <PriceChart productId={product.id} productName={product.title} />
-          </div>
+            {priceHistory && (
+                <div style={styles.chartSection}>
+                  <PriceChart 
+                    productName={product.name}
+                    // Передаем историю средних цен
+                    averageHistory={priceHistory.price_history} 
+                    // Передаем список предложений с названиями магазинов для селектора
+                    offers={product.offers.map(o => ({
+                      id: o.id,
+                      storeName: stores[o.store_id] || "Магазин"
+                    }))}
+                  />
+                </div>
+              )}
         </div>
       </main>
 
@@ -289,9 +283,6 @@ const styles = {
   breadcrumb: {
     cursor: 'pointer',
     padding: '2px 4px',
-    ':hover': {
-      color: '#05386B',
-    }
   },
   breadcrumbActive: {
     color: '#05386B',
@@ -319,11 +310,15 @@ const styles = {
     borderRadius: '8px',
     overflow: 'hidden',
     textAlign: 'center',
+    height: '400px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   mainImageImg: {
-    width: '100%',
-    maxWidth: '500px',
-    height: 'auto',
+    maxWidth: '100%',
+    maxHeight: '100%',
+    objectFit: 'contain'
   },
   thumbnails: {
     display: 'flex',
@@ -442,31 +437,11 @@ const styles = {
     fontSize: '13px',
     fontWeight: '500',
   },
-  notifyButton: {
-    padding: '6px 12px',
-    background: '#ff9800',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-  },
   priceActions: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
     marginTop: '15px',
-  },
-  compareButton: {
-    padding: '10px',
-    background: '#fff',
-    color: '#05386B',
-    border: '1px solid #05386B',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
   },
   favoriteButton: {
     padding: '10px',
@@ -533,16 +508,6 @@ const styles = {
     color: '#333',
     marginBottom: '10px',
   },
-  featureList: {
-    paddingLeft: '20px',
-    marginBottom: '20px',
-  },
-  featureItem: {
-    fontSize: '14px',
-    color: '#444',
-    marginBottom: '8px',
-    lineHeight: '1.5',
-  },
   specsContent: {
     marginTop: '10px',
   },
@@ -566,67 +531,10 @@ const styles = {
     fontWeight: '500',
     color: '#333',
   },
-  reviewsContent: {
-    marginTop: '10px',
-  },
-  reviewStats: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '20px',
-    padding: '15px',
-    background: '#f9f9f9',
-    borderRadius: '6px',
-  },
-  ratingSummary: {
-    textAlign: 'center',
-    flex: '1',
-  },
-  ratingNumber: {
-    fontSize: '36px',
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  ratingStars: {
-    fontSize: '18px',
-    color: '#ffb300',
-    margin: '5px 0',
-  },
-  ratingCount: {
-    fontSize: '14px',
-    color: '#666',
-  },
-  reviewsList: {
-    marginTop: '20px',
-  },
-  reviewItem: {
-    borderBottom: '1px solid #eee',
-    padding: '15px 0',
-  },
-  reviewHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: '5px',
-  },
-  reviewAuthor: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#333',
-  },
-  reviewDate: {
-    fontSize: '12px',
-    color: '#666',
-  },
-  reviewRating: {
-    fontSize: '14px',
-    color: '#ffb300',
-    marginBottom: '5px',
-  },
-  reviewText: {
-    fontSize: '14px',
-    color: '#444',
-    lineHeight: '1.5',
-  },
   chartSection: {
+    background: 'white',
+    borderRadius: '8px',
+    padding: '20px',
     marginTop: '20px',
   },
 };

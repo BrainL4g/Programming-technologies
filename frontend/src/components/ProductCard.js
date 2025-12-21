@@ -5,20 +5,23 @@ import { useAuth } from "../context/AuthContext";
 
 export default function ProductCard({ product, showTracking }) {
   const navigate = useNavigate();
-  const { isFavorite, toggleFavorite } = useFavorites();
   const { isAuth } = useAuth();
+  const { isFavorite, toggleFavorite, isTracking, toggleTracking } = useFavorites();
+  const tracking = isTracking(product.id); // Проверяем статус для текущей карточки
 
   const fav = isFavorite(product.id);
+
+  const imageUrl = `http://127.0.0.1:8000/uploads/${product.images[0].id}`;
 
   return (
     <div
       style={styles.card}
       onClick={() => navigate(`/product/${product.id}`)}
     >
-      <img src={product.image} alt={product.title} style={styles.image} />
+      <img src={imageUrl} alt={product.title} style={styles.image} />
 
-      <h4 style={styles.title}>{product.title}</h4>
-      <div style={styles.price}>{product.price} ₽</div>
+      <h4 style={styles.title}>{product.name}</h4>
+      <div style={styles.price}>{Math.round(product.min_price)} ₽</div>
 
       <button
         style={fav ? styles.removeBtn : styles.addBtn}
@@ -32,13 +35,17 @@ export default function ProductCard({ product, showTracking }) {
 
       {fav && showTracking && (
         <button
-          style={styles.trackBtn}
+          style={{
+            ...styles.trackBtn,
+            background: tracking ? "#4CAF50" : "#ffb300", 
+            color: tracking ? "#fff" : "#000",
+          }}
           onClick={(e) => {
             e.stopPropagation();
-            alert("Вы начали отслеживать товар!");
+            toggleTracking(product.id); 
           }}
         >
-          Отслеживать
+          {tracking ? "✓ Отслеживается" : "Отслеживать цену"}
         </button>
       )}
     </div>
@@ -59,7 +66,7 @@ const styles = {
   image: {
     width: "100%",
     height: 140,
-    objectFit: "cover",
+    objectFit: "contain",
     borderRadius: 6,
   },
   title: { fontSize: 16, margin: "10px 0" },

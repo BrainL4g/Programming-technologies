@@ -5,30 +5,42 @@ import Categories from '../components/Categories';
 import RecommendedSlider from '../components/RecommendedSlider';
 import ProductList from '../components/ProductList';
 import Footer from '../components/Footer';
-import { products } from "../mocks/products";
-import { recommended } from "../mocks/recommended";
+import { useState, useEffect } from "react";
+import apiClient from "../api/apiClient";
 
 function HomePage() {
+  const [popularProducts, setPopularProducts] = useState([]);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+
+  useEffect(() => {
+    // Загружаем популярные
+    apiClient.get('/products')
+      .then(data => setPopularProducts(data))
+      .catch(err => console.error(err));
+
+    // Загружаем рекомендации
+    apiClient.get('/products')
+      .then(data => setRecommendedProducts(data))
+      .catch(err => console.error(err));
+  }, []);
+
   return (
     <>
       <Header />
       <Banner />
-
       <main style={styles.main}>
         <Categories />
-
         <div style={styles.rightColumn}>
-          <RecommendedSlider products={recommended} />
-          <ProductList products={products} title="Популярные товары" />
+          <RecommendedSlider products={recommendedProducts} />
+          <ProductList products={popularProducts} title="Популярные товары" />
         </div>
       </main>
-
       <Footer />
     </>
   );
 }
 
-const styles = {
+ const styles = {
   main: {
     display: 'flex',
     width: '100%',
@@ -42,6 +54,6 @@ const styles = {
     flexDirection: 'column',
     gap: 20
   }
-};
+}; 
 
 export default HomePage;

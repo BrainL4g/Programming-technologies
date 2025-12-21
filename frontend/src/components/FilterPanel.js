@@ -1,5 +1,14 @@
 import React from 'react';
 
+// Маппинг для красивых названий ключей (опционально)
+const specLabels = {
+  processor: "Процессор",
+  ram: "Оперативная память",
+  storage: "Накопитель",
+  camera: "Камера",
+  display: "Экран"
+};
+
 function FilterPanel({
   sortOption,
   onSortChange,
@@ -7,190 +16,79 @@ function FilterPanel({
   onPriceChange,
   selectedBrands,
   onBrandToggle,
+  availableBrands,
+  availableSpecs,
+  selectedSpecs,
+  onSpecToggle,
   onResetFilters
 }) {
-  const brands = ['Samsung', 'Apple', 'Xiaomi', 'Lenovo', 'Asus', 'HP', 'Dell'];
-
-  const sortOptions = [
-    { id: 'price_desc', label: 'Сначала дороже' },
-    { id: 'price_asc', label: 'Сначала дешевле' },
-    { id: 'popular', label: 'Сначала популярнее' }
-  ];
-
   return (
     <div style={styles.panel}>
       <div style={styles.section}>
         <h3 style={styles.sectionTitle}>Сортировка</h3>
-        {sortOptions.map((option) => (
-          <div key={option.id} style={styles.radioGroup}>
-            <input
-              type="radio"
-              id={option.id}
-              name="sort"
-              checked={sortOption === option.id}
-              onChange={() => onSortChange(option.id)}
-              style={styles.radio}
-            />
-            <label htmlFor={option.id} style={styles.radioLabel}>
-              {option.label}
-            </label>
+        {['price_desc', 'price_asc', 'popular'].map(opt => (
+          <div key={opt} style={styles.group} onClick={() => onSortChange(opt)}>
+            <input type="radio" readOnly checked={sortOption === opt} style={styles.input} />
+            <label style={styles.label}>{opt === 'popular' ? 'Популярные' : opt === 'price_asc' ? 'Дешевле' : 'Дороже'}</label>
           </div>
         ))}
       </div>
 
       <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Фильтрация</h3>
+        <h3 style={styles.sectionTitle}>Производители</h3>
+        <div style={styles.scrollList}>
+          {availableBrands.map(brand => (
+            <div key={brand} style={styles.group} onClick={() => onBrandToggle(brand)}>
+              <input type="checkbox" readOnly checked={selectedBrands.includes(brand)} style={styles.input} />
+              <label style={styles.label}>{brand}</label>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        <div style={styles.filterBlock}>
-          <h4 style={styles.filterTitle}>Производители</h4>
-          <div style={styles.brandsList}>
-            {brands.map((brand) => (
-              <div key={brand} style={styles.checkboxGroup}>
-                <input
-                  type="checkbox"
-                  id={`brand-${brand}`}
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => onBrandToggle(brand)}
-                  style={styles.checkbox}
+      {/* ДИНАМИЧЕСКИЕ ХАРАКТЕРИСТИКИ */}
+      {Object.entries(availableSpecs).map(([specKey, values]) => (
+        <div key={specKey} style={styles.section}>
+          <h3 style={styles.sectionTitle}>{specLabels[specKey] || specKey}</h3>
+          <div style={styles.scrollList}>
+            {values.map(val => (
+              <div key={val} style={styles.group} onClick={() => onSpecToggle(specKey, val)}>
+                <input 
+                  type="checkbox" 
+                  readOnly 
+                  checked={selectedSpecs[specKey]?.includes(val)} 
+                  style={styles.input} 
                 />
-                <label htmlFor={`brand-${brand}`} style={styles.checkboxLabel}>
-                  {brand}
-                </label>
+                <label style={styles.label}>{val}</label>
               </div>
             ))}
           </div>
         </div>
+      ))}
 
-        <div style={styles.filterBlock}>
-          <h4 style={styles.filterTitle}>Цена</h4>
-          <div style={styles.priceInputs}>
-            <input
-              type="number"
-              placeholder="От"
-              value={priceRange.min || ''}
-              onChange={(e) => onPriceChange('min', e.target.value)}
-              style={styles.priceInput}
-              min="0"
-            />
-            <span style={styles.priceSeparator}>—</span>
-            <input
-              type="number"
-              placeholder="До"
-              value={priceRange.max || ''}
-              onChange={(e) => onPriceChange('max', e.target.value)}
-              style={styles.priceInput}
-              min="0"
-            />
-          </div>
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Цена</h3>
+        <div style={{display: 'flex', gap: 5}}>
+          <input type="number" placeholder="От" value={priceRange.min} onChange={(e) => onPriceChange('min', e.target.value)} style={styles.priceInput} />
+          <input type="number" placeholder="До" value={priceRange.max} onChange={(e) => onPriceChange('max', e.target.value)} style={styles.priceInput} />
         </div>
       </div>
 
-      <button onClick={onResetFilters} style={styles.resetBtn}>
-        Сбросить фильтры
-      </button>
+      <button onClick={onResetFilters} style={styles.resetBtn}>Сбросить всё</button>
     </div>
   );
 }
 
 const styles = {
-  panel: {
-    width: 280,
-    background: '#fff',
-    padding: 20,
-    marginRight: 20,
-    borderRadius: 8,
-    height: 'fit-content',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  section: {
-    marginBottom: 25,
-    paddingBottom: 20,
-    borderBottom: '1px solid #eee',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 600,
-    marginBottom: 15,
-    color: '#333',
-  },
-  radioGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 12,
-    cursor: 'pointer',
-  },
-  radio: {
-    marginRight: 10,
-    width: 16,
-    height: 16,
-    cursor: 'pointer',
-  },
-  radioLabel: {
-    fontSize: 14,
-    color: '#555',
-    cursor: 'pointer',
-    userSelect: 'none',
-  },
-  filterBlock: {
-    marginBottom: 20,
-  },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: 500,
-    marginBottom: 12,
-    color: '#444',
-  },
-  brandsList: {
-    maxHeight: 200,
-    overflowY: 'auto',
-    paddingRight: 5,
-  },
-  checkboxGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: 10,
-    cursor: 'pointer',
-  },
-  checkbox: {
-    marginRight: 8,
-    width: 16,
-    height: 16,
-    cursor: 'pointer',
-  },
-  checkboxLabel: {
-    fontSize: 14,
-    color: '#555',
-    cursor: 'pointer',
-    userSelect: 'none',
-  },
-  priceInputs: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  priceInput: {
-    flex: 1,
-    width: 100,
-    padding: '8px 10px',
-    border: '1px solid #ddd',
-    borderRadius: 4,
-    fontSize: 14,
-  },
-  priceSeparator: {
-    color: '#888',
-    fontSize: 14,
-  },
-  resetBtn: {
-    width: '100%',
-    padding: '10px',
-    background: '#f0f0f0',
-    border: '1px solid #ddd',
-    borderRadius: 6,
-    color: '#333',
-    fontSize: 14,
-    cursor: 'pointer',
-    marginTop: 10,
-  },
+  panel: { width: 250, background: '#fff', paddingRight: 20 },
+  section: { marginBottom: 20, paddingBottom: 15, borderBottom: '1px solid #f0f0f0' },
+  sectionTitle: { fontSize: 15, fontWeight: 600, marginBottom: 12 },
+  group: { display: 'flex', alignItems: 'center', marginBottom: 8, cursor: 'pointer' },
+  input: { marginRight: 10, cursor: 'pointer' },
+  label: { fontSize: 14, cursor: 'pointer', color: '#444' },
+  scrollList: { maxHeight: 150, overflowY: 'auto' },
+  priceInput: { width: '100%', padding: '6px', border: '1px solid #ddd', borderRadius: 4 },
+  resetBtn: { width: '100%', padding: '10px', background: '#f8f9fa', border: 'none', borderRadius: 6, cursor: 'pointer' }
 };
 
 export default FilterPanel;

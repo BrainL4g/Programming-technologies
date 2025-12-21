@@ -1,219 +1,205 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FilterPanel from '../components/FilterPanel';
 import ProductCard from '../components/ProductCard';
 import Pagination from '../components/Pagination';
-import { products } from '../mocks/products';
+import { productService } from '../api/productService';
+import apiClient from '../api/apiClient';
+import { useSearchParams } from 'react-router-dom';
 
 function SearchResultsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryId = searchParams.get('category_id');
+
   const [sortOption, setSortOption] = useState('popular');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [selectedSpecs, setSelectedSpecs] = useState({});
+  
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-  // Функция для переключения бренда в фильтре
-  const handleBrandToggle = (brand) => {
-    if (selectedBrands.includes(brand)) {
-      setSelectedBrands(selectedBrands.filter(b => b !== brand));
-    } else {
-      setSelectedBrands([...selectedBrands, brand]);
-    }
-  };
-
-  // Функция для изменения цены
-  const handlePriceChange = (field, value) => {
-    setPriceRange({
-      ...priceRange,
-      [field]: value
-    });
-  };
-
-  // Функция для сброса фильтров
-  const handleResetFilters = () => {
-    setSortOption('popular');
-    setPriceRange({ min: '', max: '' });
-    setSelectedBrands([]);
-  };
-
-  // Применение фильтров
   useEffect(() => {
-    let result = [...products];
+    apiClient.get('/categories/')
+      .then(res => setCategories(res))
+      .catch(err => console.error("Ошибка категорий", err));
+  }, []);
 
-    // Фильтрация по цене
-    if (priceRange.min !== '') {
-      result = result.filter(product => product.price >= Number(priceRange.min));
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const sortMap = {
+        'price_asc': { sort_by: 'price', sort_order: 'asc' },
+        'price_desc': { sort_by: 'price', sort_order: 'desc' },
+        'popular': { sort_by: 'id', sort_order: 'desc' }
+      };
+      const { sort_by, sort_order } = sortMap[sortOption] || sortMap['popular'];
+
+      const params = {
+        skip: (currentPage - 1) * itemsPerPage,
+        limit: itemsPerPage,
+        category_id: categoryId || null,
+        sort_by,
+        sort_order,
+      };
+
+      const data = await productService.getProducts(params);
+      setProducts(data);
+    } catch (err) {
+      setError("Не удалось загрузить товары.");
+    } finally {
+      setLoading(false);
     }
-    if (priceRange.max !== '') {
-      result = result.filter(product => product.price <= Number(priceRange.max));
-    }
+  }, [currentPage, sortOption, categoryId, itemsPerPage]);
 
-    // Сортировка
-    switch (sortOption) {
-      case 'price_desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'price_asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'popular':
-        // Для демонстрации сортируем по ID (предполагая, что больший ID = новее товар)
-        result.sort((a, b) => b.id - a.id);
-        break;
-      default:
-        break;
-    }
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
-    setFilteredProducts(result);
-  }, [sortOption, priceRange]);
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedBrands([]);
+    setSelectedSpecs({});
+    setPriceRange({ min: '', max: '' });
+  }, [categoryId]);
 
-  // Разделение товаров на ряды по 3
-  const rows = [];
-  for (let i = 0; i < filteredProducts.length; i += 3) {
-    rows.push(filteredProducts.slice(i, i + 3));
-  }
+  const { availableBrands, availableSpecs } = useMemo(() => {
+    const brands = new Set();
+    const specs = {};
+    products.forEach(p => {
+      if (p.brand) brands.add(p.brand);
+      if (p.specifications) {
+        Object.entries(p.specifications).forEach(([key, value]) => {
+          if (!specs[key]) specs[key] = new Set();
+          specs[key].add(value);
+        });
+      }
+    });
+    const formattedSpecs = {};
+    Object.keys(specs).forEach(key => {
+      formattedSpecs[key] = [...specs[key]].sort();
+    });
+    return { availableBrands: [...brands].sort(), availableSpecs: formattedSpecs };
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+      const price = product.min_price || 0;
+      const matchesMinPrice = priceRange.min === '' || price >= Number(priceRange.min);
+      const matchesMaxPrice = priceRange.max === '' || price <= Number(priceRange.max);
+      const matchesSpecs = Object.entries(selectedSpecs).every(([specKey, selectedValues]) => {
+        if (!selectedValues || selectedValues.length === 0) return true;
+        return selectedValues.includes(product.specifications?.[specKey]);
+      });
+      return matchesBrand && matchesMinPrice && matchesMaxPrice && matchesSpecs;
+    });
+  }, [products, selectedBrands, priceRange, selectedSpecs]);
+
+  const handleSpecToggle = (specKey, value) => {
+    setSelectedSpecs(prev => {
+      const currentValues = prev[specKey] || [];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value];
+      return { ...prev, [specKey]: newValues };
+    });
+    setCurrentPage(1);
+  };
+
+  const handleCategorySelect = (id) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (id === null) newParams.delete('category_id');
+    else newParams.set('category_id', id);
+    setSearchParams(newParams);
+  };
 
   return (
     <>
       <Header />
-
       <main style={styles.main}>
         <div style={styles.container}>
           <div style={styles.content}>
+            <div style={styles.categoryBar}>
+              <button onClick={() => handleCategorySelect(null)} style={{ ...styles.chip, ...(categoryId === null ? styles.activeChip : {}) }}>Все товары</button>
+              {categories.map(cat => (
+                <button key={cat.id} onClick={() => handleCategorySelect(cat.id)} style={{ ...styles.chip, ...(String(categoryId) === String(cat.id) ? styles.activeChip : {}) }}>{cat.name}</button>
+              ))}
+            </div>
+
             <div style={styles.header}>
               <h1 style={styles.title}>Каталог</h1>
-              <div style={styles.resultsCount}>
-                Найдено товаров: <strong>{filteredProducts.length}</strong>
-              </div>
+              <div style={styles.resultsCount}>Найдено: <strong>{filteredProducts.length}</strong></div>
             </div>
 
             <div style={styles.body}>
-              {/* Левая панель фильтров */}
               <FilterPanel
                 sortOption={sortOption}
                 onSortChange={setSortOption}
                 priceRange={priceRange}
-                onPriceChange={handlePriceChange}
+                onPriceChange={(f, v) => { setPriceRange(p => ({ ...p, [f]: v })); setCurrentPage(1); }}
                 selectedBrands={selectedBrands}
-                onBrandToggle={handleBrandToggle}
-                onResetFilters={handleResetFilters}
+                onBrandToggle={(b) => { setSelectedBrands(p => p.includes(b) ? p.filter(x => x !== b) : [...p, b]); setCurrentPage(1); }}
+                availableBrands={availableBrands}
+                availableSpecs={availableSpecs}
+                selectedSpecs={selectedSpecs}
+                onSpecToggle={handleSpecToggle}
+                onResetFilters={() => { setSortOption('popular'); setPriceRange({ min: '', max: '' }); setSelectedBrands([]); setSelectedSpecs({}); }}
               />
 
-              {/* Правая часть с товарами */}
               <div style={styles.productsSection}>
-                <div style={styles.productsContainer}>
-                  {/* Отображение товаров по 3 в ряду */}
-                  {rows.map((row, rowIndex) => (
-                    <div key={rowIndex} style={styles.row}>
-                      {row.map(product => (
-                        <ProductCard key={product.id} product={product} />
-                      ))}
-                      {/* Добавляем пустые места если в ряду меньше 3 товаров */}
-                      {row.length < 3 &&
-                        Array.from({ length: 3 - row.length }).map((_, index) => (
-                          <div key={`empty-${rowIndex}-${index}`} style={styles.emptyCard} />
-                        ))
-                      }
-                    </div>
-                  ))}
-
-                  {filteredProducts.length === 0 && (
-                    <div style={styles.noResults}>
-                      <h3>Товары не найдены</h3>
-                      <p>Попробуйте изменить параметры фильтрации</p>
-                      <button
-                        onClick={handleResetFilters}
-                        style={styles.resetFiltersBtn}
-                      >
-                        Сбросить фильтры
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Пагинация (только если есть товары) */}
-                {filteredProducts.length > 0 && <Pagination />}
+                {loading ? (
+                  <div style={styles.centerBox}><h3>Загрузка...</h3></div>
+                ) : filteredProducts.length > 0 ? (
+                  <div style={styles.grid}>
+                    {filteredProducts.map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={styles.centerBox}><h3>Ничего не найдено</h3></div>
+                )}
+                
+                {!loading && filteredProducts.length > 0 && (
+                  <div style={styles.paginationWrapper}>
+                    <Pagination currentPage={currentPage} totalItems={filteredProducts.length} itemsPerPage={itemsPerPage} onPageChange={setCurrentPage} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );
 }
 
 const styles = {
-  main: {
-    minHeight: '70vh',
-    background: '#f5f5f5',
+  main: { minHeight: '70vh', background: '#f5f5f5', padding: '20px 0' },
+  container: { width: '100%', maxWidth: 1400, margin: '0 auto', padding: '0 20px' },
+  content: { background: '#fff', borderRadius: 12, padding: '25px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' },
+  categoryBar: { display: 'flex', overflowX: 'auto', gap: '10px', marginBottom: '25px', paddingBottom: '10px', borderBottom: '1px solid #f0f0f0' },
+  chip: { padding: '10px 20px', background: '#f0f2f5', border: 'none', borderRadius: '30px', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '14px', transition: '0.2s' },
+  activeChip: { background: '#05386B', color: '#fff' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  title: { fontSize: 28, margin: 0, fontWeight: 700, color: '#1a1a1a' },
+  resultsCount: { fontSize: 15, color: '#888' },
+  body: { display: 'flex', alignItems: 'flex-start', gap: '30px' },
+  productsSection: { flex: 1, minWidth: 0 },
+  grid: { 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+    gap: '20px',
+    width: '100%'
   },
-  container: {
-    width: '100%',
-    maxWidth: 1300,
-    margin: '0 auto',
-    padding: '20px',
-  },
-  content: {
-    background: '#fff',
-    borderRadius: 8,
-    padding: 25,
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottom: '1px solid #eee',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 600,
-    color: '#333',
-    margin: 0,
-  },
-  resultsCount: {
-    fontSize: 16,
-    color: '#666',
-  },
-  body: {
-    display: 'flex',
-  },
-  productsSection: {
-    flex: 1,
-  },
-  productsContainer: {
-    marginBottom: 30,
-  },
-  row: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    gap: 10,
-  },
-  emptyCard: {
-    width: 200,
-    margin: 10,
-    visibility: 'hidden',
-  },
-  noResults: {
-    textAlign: 'center',
-    padding: '60px 20px',
-    color: '#666',
-  },
-  resetFiltersBtn: {
-    padding: '12px 24px',
-    background: '#1976d2',
-    color: 'white',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    fontSize: 15,
-    marginTop: 15,
-  },
+  centerBox: { textAlign: 'center', padding: '50px 0', color: '#666' },
+  paginationWrapper: { marginTop: '40px', display: 'flex', justifyContent: 'center' }
 };
 
 export default SearchResultsPage;

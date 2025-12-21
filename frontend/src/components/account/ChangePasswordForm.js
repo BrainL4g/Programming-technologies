@@ -1,37 +1,52 @@
 import React, { useState } from 'react';
+import apiClient from '../../api/apiClient'; // Импортируйте ваш клиент
 
 function ChangePasswordForm({ onCancel }) {
   const [current, setCurrent] = useState('');
   const [pass1, setPass1] = useState('');
   const [pass2, setPass2] = useState('');
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     let newErrors = {};
-
     if (!current) newErrors.current = 'Введите текущий пароль';
     if (!pass1) newErrors.pass1 = 'Введите новый пароль';
     if (!pass2) newErrors.pass2 = 'Повторите новый пароль';
-    if (pass1 && pass2 && pass1 !== pass2)
-      newErrors.pass2 = 'Пароли не совпадают';
+    if (pass1 && pass2 && pass1 !== pass2) newErrors.pass2 = 'Пароли не совпадают';
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      onCancel();
+      setLoading(true);
+      try {
+        await apiClient.patch('/users/me/password', {
+          password: current,
+          new_password: pass1,
+          confirm_new_password: pass2
+        });
+        alert('Пароль успешно изменен!');
+        onCancel();
+      } catch (err) {
+        setErrors({ server: err.message || 'Ошибка при смене пароля' });
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div>
       <h3>Смена пароля</h3>
-
+      {errors.server && <p style={styles.error}>{errors.server}</p>}
+      
       <input
         type="password"
         placeholder="Текущий пароль"
         style={{ ...styles.input, borderColor: errors.current ? 'red' : '#ccc' }}
         value={current}
         onChange={(e) => setCurrent(e.target.value)}
+        disabled={loading}
       />
       {errors.current && <p style={styles.error}>{errors.current}</p>}
 
@@ -41,6 +56,7 @@ function ChangePasswordForm({ onCancel }) {
         style={{ ...styles.input, borderColor: errors.pass1 ? 'red' : '#ccc' }}
         value={pass1}
         onChange={(e) => setPass1(e.target.value)}
+        disabled={loading}
       />
       {errors.pass1 && <p style={styles.error}>{errors.pass1}</p>}
 
@@ -50,12 +66,15 @@ function ChangePasswordForm({ onCancel }) {
         style={{ ...styles.input, borderColor: errors.pass2 ? 'red' : '#ccc' }}
         value={pass2}
         onChange={(e) => setPass2(e.target.value)}
+        disabled={loading}
       />
       {errors.pass2 && <p style={styles.error}>{errors.pass2}</p>}
 
       <div style={styles.row}>
-        <button style={styles.cancel} onClick={onCancel}>Отмена</button>
-        <button style={styles.save} onClick={handleSave}>Изменить</button>
+        <button style={styles.cancel} onClick={onCancel} disabled={loading}>Отмена</button>
+        <button style={styles.save} onClick={handleSave} disabled={loading}>
+          {loading ? 'Загрузка...' : 'Изменить'}
+        </button>
       </div>
     </div>
   );

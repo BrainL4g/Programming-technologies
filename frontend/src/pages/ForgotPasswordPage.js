@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../api/apiClient.js";
+import { useAuth } from "../context/AuthContext.js";
 
 function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
@@ -8,52 +10,37 @@ function ForgotPasswordPage() {
   const [newPass, setNewPass] = useState("");
   const [newPassConfirm, setNewPassConfirm] = useState("");
   const [error, setError] = useState("");
+  const { login } = useAuth();
 
   const navigate = useNavigate();
 
   // 1) Отправка почты
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-
     if (!email) {
       setError("Введите вашу почту");
       return;
     }
-
-    // имитация отправки письма
-    setError("");
+    await apiClient.post(`/password-reset?email=${email}`, {email});
     setStep(2);
   };
 
   // 2) Ввод кода
-  const handleCodeSubmit = (e) => {
+  const handleCodeSubmit = async (e) => {
     e.preventDefault();
 
     if (code.length < 4) {
       setError("Некорректный код");
       return;
     }
-
-    setError("");
-    setStep(3);
-  };
-
-  // 3) Ввод нового пароля
-  const handleNewPassSubmit = (e) => {
-    e.preventDefault();
-
-    if (newPass.length < 6) {
-      setError("Пароль должен быть не менее 6 символов");
-      return;
+    try {
+      await apiClient.post(`/password-reset/verify`, {email, code, new_password:newPass, confirm_new_password:newPassConfirm});
+      await login(email, newPass);
+      navigate('/');
+    } catch (error) {
+        setError("Неверный код");
     }
-    if (newPass !== newPassConfirm) {
-      setError("Пароли не совпадают");
-      return;
-    }
-
-    // успешная смена пароля
-    setError("");
-    navigate("/");
+    
   };
 
   return (
@@ -100,40 +87,6 @@ function ForgotPasswordPage() {
                 onChange={(e) => setCode(e.target.value)}
               />
 
-              {error && <p style={styles.error}>{error}</p>}
-
-              <p style={styles.desc}>
-                На вашу почту был отправлен код подтверждения сброса. Если код
-                не пришел в течение нескольких минут — нажмите “Отправить
-                повторно”.
-              </p>
-
-              <div style={styles.row}>
-                <button
-                  type="button"
-                  style={styles.buttonLight}
-                  onClick={() => setStep(1)}
-                >
-                  Назад
-                </button>
-
-                <button type="button" style={styles.buttonLight}>
-                  Отправить повторно
-                </button>
-
-                <button type="submit" style={styles.buttonDark}>
-                  Сбросить
-                </button>
-              </div>
-            </form>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <h2 style={styles.title}>Введите новый пароль</h2>
-
-            <form onSubmit={handleNewPassSubmit}>
               <input
                 type="password"
                 placeholder="Пароль*"
@@ -152,12 +105,33 @@ function ForgotPasswordPage() {
 
               {error && <p style={styles.error}>{error}</p>}
 
-              <button type="submit" style={styles.buttonDark}>
-                Войти
-              </button>
+              <p style={styles.desc}>
+                На вашу почту был отправлен код подтверждения сброса. Если код
+                не пришел в течение нескольких минут — нажмите “Отправить
+                повторно”.
+              </p>
+
+              <div style={styles.row}>
+                <button
+                  type="button"
+                  style={styles.buttonLight}
+                  onClick={() => setStep(1)}
+                >
+                  Назад
+                </button>
+
+                <button type="button" style={styles.buttonLight} onClick={handleEmailSubmit}>
+                  Отправить повторно
+                </button>
+
+                <button type="submit" style={styles.buttonDark}>
+                  Сбросить
+                </button>
+              </div>
             </form>
           </>
         )}
+
       </div>
     </div>
   );
